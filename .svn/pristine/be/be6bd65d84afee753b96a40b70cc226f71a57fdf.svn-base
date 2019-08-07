@@ -1,0 +1,23 @@
+package com.gravity.mm.action;
+
+import org.apache.log4j.Logger;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+
+@Controller
+@RequestMapping("/")
+public class OtherPeopleController {
+	
+	private static Logger LOG = Logger.getLogger(OtherPeopleController.class);
+	
+	@RequestMapping(value = "otherPeople", method = RequestMethod.POST)
+	public String login(Model model) {
+		
+		System.out.println("¼¼¼Ç °ª : otherPeople");
+		return "admin/otherPeople";
+
+	}
+
+}

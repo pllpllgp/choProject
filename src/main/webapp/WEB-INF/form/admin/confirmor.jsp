@@ -1,0 +1,357 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=EUC-KR">
+<title>Gravity M/M</title>
+<script type="text/javascript" src="/mm/common/js/jquery-3.3.1.js"></script>
+<script type="text/javascript" src="/mm/common/js/select2.js"></script>
+<script type="text/javascript">
+	$(function() {
+		
+		//조회
+		$("#btn_search").click(function() {
+			
+			$("#urlPage").val("confirmor");
+			$("#methodType").val("search");
+			
+			if($("#search_date option:selected").val() == "") { 
+				alert("작업월을 선택해 주세요.");
+				
+			} else {
+				doSubmit();
+				
+			}
+		});
+		
+		
+		//확인자 추가
+		$("#confirmorAdd").click(function() {
+			
+			document.getElementById("confirmorAddTable").style.display = "block";
+			
+			var mytable = document.getElementById('confirmorInserEdit');
+			
+			if(mytable.rows.length > 1){
+				for(var i = 1; mytable.rows.length != i; i){
+						
+					mytable.deleteRow(1);
+				}
+			}
+			
+			row = mytable.insertRow(mytable.rows.length);
+			
+			cell1 = row.insertCell(0);
+			cell2 = row.insertCell(1);
+			cell3 = row.insertCell(2);
+			
+			cell1.innerHTML = "<td><select id='addConfirmorDate' name='addConfirmorDate' class='form-control'><option value=''>작업월</option><c:forEach var='item' items='${lMonth }'><option value='${item }'>${item }</option></c:forEach></select></td>";
+			cell2.innerHTML = "<td><input type='text' id='addConfirmorNum' name='addConfirmorNum' readonly style='border: 0; text-align: center; '/></td>";
+			cell3.innerHTML = "<td><select id='addConfirmorName' name='addConfirmorName' onchange='changeUser()'><c:forEach var='item' items='${lUser }'><option value='${item.userSEQ }'>${item.userName }</option></c:forEach></select></td>";
+			
+			$("#addConfirmorName").select2();
+			$("#confirmorState").val("confirmorAdd");
+		});
+		
+		
+		//확인자 수정
+		$("#confirmorEdit").click(function() {
+			
+			var confirSeq = "";
+			var addConfirSeq = "";
+			var addConfirNum = "";
+			var addConfirName = "";
+			var check = 0;
+			
+			var mytable = document.getElementById('confirmorInserEdit');
+			
+			if(mytable.rows.length > 1) {
+				for(var i = 1; mytable.rows.length != i; i) {
+					
+					mytable.deleteRow(1);
+				}
+			}
+			
+			$("[name='checkConfirmor']").each(function() {
+				
+				if($(this).is(":checked")){
+					document.getElementById("confirmorAddTable").style.display = "block";
+					//index 찾기
+					projectIndex = $(this).closest('tr').index();
+					
+					confirSeq = $(this).val(); //확인자 수정 SEQ
+					addConfirSeq = $(this).closest('tr').find('[name="confirmorSe"]').text(); //확인자 유저 SEQ
+					addConfirNum = $(this).closest('tr').find('[name="confirmorNu"]').text(); //확인자 유저 사번
+					addConfirName = $(this).closest('tr').find('[name="confirmorNa"]').text(); //확인자 유저 이름
+					
+					row = mytable.insertRow(mytable.rows.length);
+					
+					cell1 = row.insertCell(0);
+					cell2 = row.insertCell(1);
+					cell3 = row.insertCell(2);
+
+					cell1.innerHTML = "<td><input type='text' id='addConfirmorDate' name='addConfirmorDate' value='${searchBean.search_date}' readonly style='text-align:center; border: 0;'/></td>";
+					cell2.innerHTML = "<td><input type='text' id='addConfirmorNum' name='addConfirmorNum' value='" + addConfirNum + "' readonly style='border: 0; text-align: center;'/></td>";
+					cell3.innerHTML = "<td><select id='addConfirmorName' name='addConfirmorName' onchange='changeUser()'><c:forEach var='item' items='${lUser }'><option value='${item.userSEQ }'>${item.userName }</option></c:forEach></select></td>";
+					
+					$("#addConfirmorName").val(addConfirSeq);
+					$("#confirmorSeq").val(confirSeq);
+					$("#addConfirmorSeq").val(addConfirSeq);
+					$("#addConfirmorName").select2();
+					$("#confirmorState").val("confirmorEdit");
+					
+					check ++;
+				}
+			});
+			
+			if(check == 0) {
+				
+				document.getElementById("confirmorAddTable").style.display = "none";
+				alert("수정할 확인자를 선택해주세요.");
+			}
+		});
+		
+		
+		//전월 확인자 데이터 다음월 확인자 데이터로 입력
+		$("#btn_prev_month").click(function() {
+			
+			$("#urlPage").val("confirmor");
+			$("#methodType").val("prevMonth");
+			
+			if(false!=confirm($("#prev_month").val() + " 데이터가 " 
+					+ $("#default_month").val() + " 데이터로 저장됩니다.\r\n"
+					+ "기존에 저장된 " + $("#default_month").val() + " 데이터는 삭제 됩니다.\r\n"
+					+ "저장 하시겠습니까?")){
+				doSubmit();
+			}
+		});
+		
+		
+		//확인자 추가/수정 저장
+		$("#btn_save").click(function() {
+			
+			$("#urlPage").val("confirmor");
+			$("#methodType").val("save");
+			
+			doSubmit();
+		});
+		
+		
+		//확인자 추가/수정 취소
+		$("#btn_delete").click(function() {
+			
+			var mytable = document.getElementById('confirmorInserEdit');
+				
+			if(mytable.rows.length > 1){
+				for(var i = 1; mytable.rows.length != i; i){
+					
+					mytable.deleteRow(1);
+				}
+			}
+	
+			document.getElementById("confirmorAddTable").style.display = "none";
+		});
+		
+		
+		//확인자 추가/수정 제거
+		$("#confirmorDelete").click(function() {
+			
+			var confirmorSeqArray = "";
+			var choice = 0;
+			
+			$("[name='checkConfirmor']").each(function(){
+				
+				if($(this).is(":checked")){
+					
+					confirmorSeqArray += $(this).val() + ",";
+					choice ++;
+				} 
+			});
+			
+			if(choice == 0) {
+				
+				alert("제거할 확인자를 선택해 주세요.");
+			} else {
+				
+				if(false!=confirm("선택한 확인자를 제거하시겠습니까?")){
+
+					$("#urlPage").val("confirmor");
+					$("#methodType").val("delete");
+					$("#arrConfirmorSeq").val(confirmorSeqArray);
+
+					doSubmit();
+				}
+			}
+		});
+		
+		
+	//$(function(){}) 종료
+	})
+	
+	//추가/수정시 확인자 선택 변경
+	function changeUser(){
+
+		$("[name='addConfirmorName']").each(function(){
+			
+			$("#confirmorNumber").val($(this).val());
+			$(this).closest('tr').find('[name="addConfirmorNum"]').val($("#confirmorNumber option:selected").text());
+			
+			$("#addConfirmorSeq").val($("#confirmorNumber option:selected").val());
+		});
+	}
+	
+	
+	//프로젝트 전체 선택
+	function allConfirmor(){
+
+		if($("#allCheckConfirmor").is(":checked")){
+			$("[name='checkConfirmor']").each(function(){
+				$(this)[0].checked = true;
+				
+			});
+		} else {
+			$("[name='checkConfirmor']").each(function(){
+				$(this)[0].checked = false;
+				
+			});
+		}
+	}	
+	
+</script>
+</head>
+<body>
+	<form id="userInfo" method="post">
+		<input type="hidden"				id="urlPage" 				name="urlPage" 				value="" />
+		<input type="hidden"				id="methodType" 			name="methodType" 			value="" />
+		<input type="hidden"				id="userSEQ"				name="userSEQ" 				value="${userBean.userSEQ } "/>
+		<input type="hidden"				id="userID"					name="userID"				value="${userBean.userID }" />
+		<input type="hidden"				id="userName" 				name="userName" 			value="${userBean.userName }" />
+		<input type="hidden"				id="userMail" 				name="userMail" 			value="${userBean.userMail }" />
+		<input type="hidden"				id="userNum" 				name="userNum" 				value="${userBean.userNum }" />
+		<input type="hidden"				id="userAuth" 				name="userAuth" 			value="${userBean.userAuth }" />
+		<input type="hidden"				id="confirmorState" 		name="confirmorState" 		value="" />
+		<input type="hidden"				id="confirmorSeq" 			name="confirmorSeq" 		value="" />
+		<input type="hidden"				id="addConfirmorSeq" 		name="addConfirmorSeq" 		value="" />
+		<input type="hidden"				id="arrConfirmorSeq" 		name="arrConfirmorSeq" 		value="" />
+	
+		<jsp:include page="/WEB-INF/form/top.jsp"></jsp:include>
+		
+		<div class="mm-menu-name"><h5>관리자 M/M (확인자 지정)</h5></div>
+		
+		<table class="mm-search">
+			<tr>
+				<th class="text-muted" style="width:60px; text-align: left;">작업월</th>
+				<td style="width:120px;">
+					<select id="search_date" name="search_date" class="form-control">
+						<option value="">작업월</option>
+						<c:forEach var='item' items="${lMonth }">
+							<option value="${item }" ${item == searchBean.search_date ? "selected='selected'" : ""}>${item }</option>
+						</c:forEach>
+					</select>
+				</td>
+				<td class="text-muted" style="width:60px;">
+					<button id="btn_search" name="btn_search" class="btn btn-secondary btn-sm">조회</button>
+				</td>
+			</tr>
+			<tr>
+				<td colspan="4" style="margin-top:10px;">
+					<c:forEach var='item' items="${lMonth }" begin="1" end="1">
+						<button type="button" id="btn_prev_month" name="btn_prev_month" class="btn btn-outline-primary">${item } 데이터 가져오기</button>
+						<input type="hidden" id="prev_month" name="prev_month" value="${item}"/>
+					</c:forEach>
+					<c:forEach var='item' items="${lMonth }" begin="0" end="0">
+						<input type="hidden" id="default_month" name="default_month" value="${item}"/>
+					</c:forEach>
+					<button type="button" id="confirmorAdd" name="confirmorAdd" class="btn btn-outline-primary">추가</button>
+					<button type="button" id="confirmorEdit" name="confirmorEdit" class="btn btn-outline-primary">수정</button>
+					<button type="button" id="confirmorDelete" name="confirmorDelete" class="btn btn-outline-primary">제거</button>
+				</td>
+			</tr>
+		</table>
+		
+		
+		<!-- 확인자 추가/수정 테이블 -->
+		<table id="confirmorAddTable" name="confirmorAddTable" style="width: 1000px; display:none;  margin-right:15px">
+			<tr>
+				<td style="border-bottom-width: 0px; padding-bottom: 0px;">
+					<table id="confirmorInserEdit" name="confirmorInserEdit" class="table table-bordered">
+						<thead>
+							<tr class="table-primary">
+								<th scope="col" style="color: #848484; text-align: center; width: 200px;">작업년도</th>
+								<th scope="col" style="color: #848484; text-align: center;">사번</th>
+								<th scope="col" style="color: #848484; text-align: center;">성명</th>
+							</tr>
+						</thead>
+					</table>
+				</td>
+			</tr>
+			<tr>
+				<td style="border-top-width: 0px; padding-top: 0px; padding-bottom:10px;">
+					<table align="right">
+						<tr>
+							<th>
+								<input type="button" id="btn_save" name="btn_save" class="btn btn-primary btn-sm" value="저장" style="width:60px;" />
+							</th>
+							<th>
+								<input type="button" id="btn_delete" name="btn_delete" class="btn btn-primary btn-sm" value="취소" style="width:60px;" />
+							</th>
+						</tr>
+					</table>
+				</td>
+			</tr>
+		</table>
+		
+		
+		<!-- 조회 테이블 -->
+		<table style="width: 1000px; margin-left: 5px">
+			<tr>
+				<td>
+					<table class="table table-bordered">
+						<thead>
+							<tr class="table-primary">
+								<th rowspan="2" scope="col" width=90px style="color: #848484; text-align:center; vertical-align:middle;"><input type="checkbox" id="allCheckConfirmor" name="allCheckConfirmor" onclick="allConfirmor()"/>  선택</th>
+								<th rowspan="2" scope="col" width=100px style="color: #848484; text-align:center; vertical-align:middle;">작업년도</th>
+								<th colspan="3" scope="col" style="color: #848484; text-align:center;">확인자</th>
+							</tr>
+							<tr class="table-primary">
+								<th scope="col" style="color: #848484; text-align:center;">사번</th>
+								<th scope="col" style="color: #848484; text-align:center;">성명</th>
+								<th scope="col" width=150px style="color: #848484; text-align:center;">팀 마감여부</th>
+							</tr>
+						</thead>
+						<c:if test="${lConfirmor.size() != 0 }">
+							<c:forEach var="item" items="${lConfirmor }">
+								<tr>
+									<td style="text-align: center;"><input type="checkbox" id="checkConfirmor" name="checkConfirmor" value="${item.i_seq_pk }"/></td>
+									<td style="text-align: center;">${item.d_job_date }</td>
+									<td id="confirmorSe" name="confirmorSe" style="display:none; ">${item.i_user_number }</td>
+									<td id="confirmorNu" name="confirmorNu">${item.v_man_seq }</td>
+									<td id="confirmorNa" name="confirmorNa">${item.v_user_name_k }</td>
+									<td id="confirmorCimplete" name="confirmorCimplete">${item.v_complete }</td>
+								</tr>
+							</c:forEach>
+						</c:if>
+					</table>
+				</td>
+			</tr>
+		</table>
+		
+		
+		<!-- 유저 사번/seq -->
+		<table style="display:none;">
+			<tr>
+				<td>
+					<select id="confirmorNumber" name="confirmorNumber">
+						<c:forEach var='item' items="${lUser }">
+							<option value="${item.userSEQ }">${item.userNum }</option>
+						</c:forEach>
+					</select>
+				</td>
+			</tr>
+		</table>
+	
+	</form>
+</body>
+</html>

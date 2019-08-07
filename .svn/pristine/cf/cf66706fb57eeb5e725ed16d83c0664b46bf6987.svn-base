@@ -1,0 +1,56 @@
+package com.gravity.mm.dao;
+
+import java.util.List;
+
+import javax.inject.Inject;
+
+import org.apache.ibatis.session.SqlSession;
+import org.springframework.stereotype.Repository;
+
+import com.gravity.mm.bean.AddPrevMonthBean;
+import com.gravity.mm.bean.GetDefaultMMBean;
+import com.gravity.mm.bean.GetProjectCodeBean;
+import com.gravity.mm.bean.GetTeamBean;
+import com.gravity.mm.bean.SearchBean;
+
+
+@Repository
+public class AdminHandler {
+	
+	@Inject
+	private SqlSession sqlSession;
+	
+	private static final String NAMESPACE = "com.gravity.mm.mapper.AdminMapper";
+	
+	
+	//다음월 프로젝트 데이터 삭제
+	public int deleteProjectCode(String default_month) {
+		return sqlSession.delete(NAMESPACE + ".deleteProjectCode", default_month);
+	}
+	
+	
+	//전월 프로젝트 데이터 다음월 프로젝트 데이터로 입력
+	public int addPrevProjectCode(AddPrevMonthBean addPrevMonthBean) {
+		return sqlSession.insert(NAMESPACE + ".addPrevProjectCode", addPrevMonthBean);
+	}
+	
+	
+	//프로젝트 사용/미사용
+	public int getProjectCodeUse(GetProjectCodeBean getProjectCodeBean) {
+		return sqlSession.update(NAMESPACE + ".getProjectCodeUse", getProjectCodeBean);
+	}
+	
+	
+	//프로젝트 추가
+	public int getProjectInsert(List<GetProjectCodeBean> list) {
+		return sqlSession.insert(NAMESPACE + ".getProjectInsert", list);
+	}
+	
+	
+	//프로젝트 수정
+	public int getProjectEdit(List<GetProjectCodeBean> list) {
+		return sqlSession.update(NAMESPACE + ".getProjectEdit", list);
+	}
+		
+
+}

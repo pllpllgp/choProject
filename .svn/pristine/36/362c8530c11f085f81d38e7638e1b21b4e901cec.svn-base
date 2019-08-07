@@ -1,0 +1,26 @@
+<%@ page language="java" contentType="text/html; charset=EUC-KR"
+    pageEncoding="EUC-KR"%>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=EUC-KR">
+<title>Gravity M/M</title>
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+</head>
+<body>
+
+	<jsp:include page="/WEB-INF/form/top.jsp"></jsp:include>
+	
+	<form id="userInfo"	name="userInfo" method="get">
+		<input type="hidden"				id="urlPage" 				value=""/>
+		<input type="hidden"				id="methodType" 			value=""/>
+		<input type="hidden"				id="userSEQ"				name="userSEQ" 				value="${userInfo.userSEQ }"/>
+		<input type="hidden"				id="userID"					name="userID"				value="${userInfo.userID }"/>
+		<input type="hidden"				id="userName" 				value="${userInfo.userName }"/>
+		<input type="hidden"				id="userMail" 				value="${userInfo.userMail }"/>
+		<input type="hidden"				id="userNum" 				value="${userInfo.userNum }"/>
+	</form>
+    
+</body>
+
+</html>

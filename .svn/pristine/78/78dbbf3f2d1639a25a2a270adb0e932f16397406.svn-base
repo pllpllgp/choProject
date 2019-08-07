@@ -1,0 +1,15 @@
+#DBConnect Setting - MS-SQL REAL
+db.url=jdbc:sqlserver://192.168.21.208:1433;databaseName=DB_MM;CHARSET=UTF-8
+db.userid=sa
+db.passwd=wjdqh!@34
+db.driver=com.microsoft.sqlserver.jdbc.SQLServerDriver
+#db.maxActive=100
+#db.maxWait=10
+#db.maxIdle=5
+#db.queryTimeOut=60
+
+#LOCAL
+#db.url=jdbc:mysql://localhost:3306/db_mm
+#db.userid=root
+#db.passwd=p@ssw0rd%m
+#db.driver=org.mariadb.jdbc.Driver

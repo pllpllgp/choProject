@@ -1,0 +1,37 @@
+package com.gravity.mm.service;
+
+import java.util.List;
+
+import com.gravity.mm.bean.AddPrevMonthBean;
+import com.gravity.mm.bean.GetOtherPeopleBean;
+import com.gravity.mm.bean.GetProjectCodeBean;
+import com.gravity.mm.bean.GetUserBean;
+import com.gravity.mm.bean.SearchBean;
+
+public interface IAdminService {
+	
+	//전월 프로젝트 데이터 다음월 프로젝트 데이터로 입력
+	public int addPrevProjectCode(AddPrevMonthBean addPrevMonthBean);
+	
+	
+	//프로젝트 사용/미사용
+	public int getProjectCodeUse(GetProjectCodeBean arr_v_project_code);
+	
+	
+	//프로젝트 추가/수정
+	public int getProjectInsertEdit(List<GetProjectCodeBean> list, String projectState);
+	
+	
+	//타인 입력 조회
+	public List<GetOtherPeopleBean> getOtherPeople(SearchBean searchBean);
+	
+	
+	//유저 조회
+	public List<GetUserBean> getUserConfirmor(String lMonth);
+	
+	
+	//프로젝트 사용/미사용
+	public int getPeopleSave(String peopleState, GetOtherPeopleBean lOtherPeople);
+	
+
+}

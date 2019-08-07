@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.gravity.mm.mapper.TeamMapper">
+
+	<select id="getConfirmorDept" parameterType="SearchBean" resultType="GetTeamBean">
+		SELECT dm.i_dept_seq
+			,dm.v_dept_name
+		FROM TBM_CONFIRMOR c
+		JOIN TBM_OTHER_PEOPLE_SUB ps 
+			ON c.i_user_number = ps.i_to_user_number
+		JOIN TBM_OTHER_PEOPLE p
+			ON ps.i_other_people_pk = p.i_seq_pk
+			AND (
+				SELECT COUNT(*)
+				FROM TBM_CONFIRMOR
+				WHERE DATE_FORMAT(d_job_date, '%Y-%m') = #{search_date}
+					AND i_user_number = p.i_user_number
+			)>0
+		JOIN TBM_DEFAULT_MM dm 
+			ON p.i_user_number = dm.i_user_number
+		WHERE DATE_FORMAT(c.d_job_date, '%Y-%m') = #{search_date}
+			AND DATE_FORMAT(dm.d_indate, '%Y-%m') = #{search_date} 
+			AND c.i_user_number = #{search_user_seq}
+			AND dm.i_dept_seq is not null
+			AND dm.v_apply = 'Y'
+  	    
+		UNION
+  	    
+		SELECT i_dept_seq
+			,v_dept_name 
+		FROM TBM_CONFIRMOR c 
+		LEFT JOIN TBM_DEFAULT_MM dm 
+			ON c.i_user_number = dm.i_user_number
+		WHERE c.i_user_number = #{search_user_seq}
+			AND DATE_FORMAT(c.d_job_date, '%Y-%m') = #{search_date}
+			AND c.v_admin_flag = 'Y'
+			AND dm.i_dept_seq is not null
+			AND dm.v_apply = 'Y'
+	</select>
+	
+	
+	<select id="getUserProjectGroup" parameterType="SearchBean" resultType="GetDefaultMMBean">
+		SELECT sum(m.d_mm_user)d_mm_user_sum
+			,P.v_project_code
+			,P.v_project_name
+			,DATE_FORMAT(dm.d_job_date, '%Y-%m') AS d_job_date
+			,dm.v_apply
+			<if test="search_dept_seq != null and search_dept_seq != ''">
+				,dm.v_dept_code
+			</if>
+			<if test="search_disable != null and search_disable != ''">
+				,dm.v_disable
+			</if>			
+		FROM TBM_DEFAULT_MM dm
+		JOIN TBG_USER u 
+			ON dm.i_user_number = u.i_seq_pk
+		LEFT JOIN TBM_MM m 
+			ON dm.i_seq_pk = m.i_default_mm_pk
+		LEFT JOIN TBM_PROJECT_CODE p 
+			ON m.i_project_code_pk = p.i_seq_pk 
+			AND p.v_apply='Y'	
+		GROUP BY p.v_project_code,v_project_name,dm.d_job_date,dm.v_apply
+		<if test="search_dept_seq != null and search_dept_seq != ''">
+			,dm.v_dept_code
+		</if>
+		<if test="search_disable != null and search_disable != ''">
+			,dm.v_disable
+		</if>
+		<if test="search_user_seq != null and search_user_seq != ''">
+			,dm.i_user_number
+		</if>
+		HAVING dm.v_apply = 'Y'
+		<if test="search_date != null and search_date != ''"> 
+		   AND DATE_FORMAT(dm.d_job_date, '%Y-%m') = #{search_date}
+		</if>
+		<if test="search_dept_seq != null and search_dept_seq != ''"> 
+			AND v_dept_code = (
+				SELECT v_dept_code
+				FROM TBM_DEFAULT_MM 
+				WHERE i_dept_seq = #{search_dept_seq}
+					AND v_apply = 'Y'
+					<if test="search_date != null and search_date != ''"> 
+						AND DATE_FORMAT(d_job_date, '%Y-%m') = #{search_date}
+					</if>
+				LIMIT 1
+				)	   
+		</if>
+		<if test="search_user_seq != null and search_user_seq != ''"> 
+			AND dm.i_user_number = #{search_user_seq}
+		</if>
+		<if test="search_disable != null and search_disable != ''">
+			AND dm.v_disable = #{search_disable} 
+		</if>
+		ORDER BY dm.d_job_date DESC, p.v_project_name
+	</select>
+
+</mapper>

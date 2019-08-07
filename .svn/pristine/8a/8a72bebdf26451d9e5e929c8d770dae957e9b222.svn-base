@@ -1,0 +1,31 @@
+package com.gravity.mm.action;
+
+import javax.inject.Inject;
+
+import org.apache.log4j.Logger;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+
+import com.gravity.mm.bean.LoginBean;
+import com.gravity.mm.service.LoginService;
+
+@Controller
+@RequestMapping("/")
+public class LoginController {
+	
+	private static Logger LOG = Logger.getLogger(LoginController.class); 
+	
+	@Inject
+	private LoginService loginService;
+
+	@RequestMapping(value = "login")
+	public String login(Model model) {
+		LoginBean login = loginService.login();
+		System.out.println("¼¼¼Ç °ª : "+login.getId());
+		return "login";
+
+	}
+
+}

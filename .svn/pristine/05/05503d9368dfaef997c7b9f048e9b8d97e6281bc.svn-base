@@ -1,0 +1,50 @@
+package com.gravity.mm.service;
+
+import java.util.List;
+
+import javax.inject.Inject;
+
+import org.springframework.stereotype.Service;
+
+import com.gravity.mm.bean.AddPrevMonthBean;
+import com.gravity.mm.bean.GetProjectCodeBean;
+import com.gravity.mm.bean.GetTeamBean;
+import com.gravity.mm.bean.SearchBean;
+import com.gravity.mm.dao.AdminHandler;
+
+@Service
+public class AdminService implements IAdminService {
+
+	@Inject
+	AdminHandler dao;
+	
+	
+	//전월 프로젝트 데이터 다음월 프로젝트 데이터로 입력
+	public int addPrevProjectCode(AddPrevMonthBean addPrevMonthBean) {
+		int Result = dao.deleteProjectCode(addPrevMonthBean.getDefault_month());
+		return dao.addPrevProjectCode(addPrevMonthBean);
+    }
+	
+	
+	//프로젝트 사용/미사용
+	public int getProjectCodeUse(GetProjectCodeBean getProjectCodeBean) {
+		return dao.getProjectCodeUse(getProjectCodeBean);
+    }
+	
+	
+	//프로젝트 추가/수정
+	public int getProjectInsertEdit(List<GetProjectCodeBean> list, String projectState) {
+		
+		int result = 0;;
+		
+		if(projectState.equals("projectAdd")) {
+			result = dao.getProjectInsert(list);
+		} else if(projectState.equals("projectEdit")) {
+			result = dao.getProjectEdit(list);
+		}
+		
+		return result;
+		
+    }
+	
+}

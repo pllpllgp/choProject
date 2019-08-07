@@ -1,0 +1,47 @@
+package com.gravity.mm.action;
+
+import javax.inject.Inject;
+
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+import com.gravity.mm.bean.UserBean;
+import com.gravity.mm.service.IUserService;
+
+@Controller
+@RequestMapping("/")
+public class LoginController {
+	
+	private static Logger LOG = Logger.getLogger(LoginController.class); 
+	
+	@Autowired 
+	IUserService ius;
+
+	@RequestMapping(value = "login")
+	public String login(Model model) {
+		
+		int test =1;
+		
+		if(test == 1) {
+			
+			String userID = "ykcho";
+			
+			UserBean login = ius.getLoginInfo(userID);
+			
+			model.addAttribute("userInfo", login);
+		
+		
+		} else {
+			
+			
+			
+		}
+		
+		return "main";
+
+	}
+
+}

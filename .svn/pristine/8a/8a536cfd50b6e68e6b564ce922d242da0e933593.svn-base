@@ -1,0 +1,24 @@
+package com.gravity.mm.action;
+
+import org.apache.log4j.Logger;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+@Controller
+@RequestMapping("team")
+public class TeamController {
+	
+	private static Logger LOG = Logger.getLogger(TeamController.class);
+	
+	@RequestMapping(value = "teamMM")
+	public String login(Model model) {
+		
+		model.addAttribute("mainURL", "/WEB-INF/form/team/teamMM.jsp");
+		
+		System.out.println("¼¼¼Ç °ª : team");
+		return "team/teamMM";
+
+	}
+
+}

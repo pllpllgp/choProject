@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	default-autowire="byName"
+	xmlns:jdbc="http://www.springframework.org/schema/jdbc"
+	xmlns:mybatis-spring="http://mybatis.org/schema/mybatis-spring"
+	xsi:schemaLocation="http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc-4.3.xsd
+		http://mybatis.org/schema/mybatis-spring http://mybatis.org/schema/mybatis-spring-1.2.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.3.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.3.xsd">
+     	
+    <context:property-placeholder location="classpath:/config.properties"/>	
+    <context:annotation-config />
+    
+    <context:component-scan base-package="com.gravity.mm.service"></context:component-scan>
+    <context:component-scan base-package="com.gravity.mm.dao"></context:component-scan>
+	
+	<!-- data source -->
+	<bean id="dataSource"  class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+		<property name="driverClassName" value="${db.driver}" />
+		<property name="url" value="${db.url}" />
+		<property name="username" value="${db.userid}" />
+		<property name="password" value="${db.passwd}" />
+		<!-- <property name="maxActive" value="${db.maxActive}"/>
+		<property name="maxWait" value="${db.maxWait}"/>
+		<property name="maxIdle" value="${db.maxIdle}"/>
+		<property name="defaultAutoCommit" value="true"/>
+		<property name="validationQuery" value="select 1"/>
+		<property name="validationQueryTimeout" value="${db.queryTimeOut}"/> -->
+	</bean>
+		
+	<!-- sql session factory -->
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+		<property name="configLocation" value="classpath:/mybatis-config.xml" />
+		<property name="typeAliasesPackage" value="com.gravity.mm.bean" />
+		<property name="mapperLocations" value="classpath:/mapper/*.xml" />
+	</bean>
+	
+	<bean id="sqlSession" class="org.mybatis.spring.SqlSessionTemplate">
+		<constructor-arg index="0" ref="sqlSessionFactory" />
+	</bean>
+
+</beans>

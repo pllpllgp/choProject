@@ -1,0 +1,120 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=EUC-KR">
+<title>Gravity M/M</title>
+<script type="text/javascript" src="/mm/common/js/jquery-3.3.1.js"></script>
+<script type="text/javascript" src="/mm/common/js/select2.js"></script>
+<script type="text/javascript">
+	$(function() {
+		
+		$("#search_project_seq").select2();
+		
+		$("#btn_search").click(function() {
+			//formClear();
+			$("#urlPage").val("projectCode");
+			$("#methodType").val("search");
+			
+			if($("#search_date option:selected").val() == ""){
+				alert("작업월을 선택해 주세요.");
+				return;
+			}
+			doSubmit();
+		});
+		
+	})
+	
+</script>
+</head>
+<body>
+	<form id="userInfo" method="post">
+		<input type="hidden"				id="urlPage" 				name="urlPage" 				value=""/>
+		<input type="hidden"				id="methodType" 			name="methodType" 			value=""/>
+		<input type="hidden"				id="userSEQ"				name="userSEQ" 				value="${userBean.userSEQ }"/>
+		<input type="hidden"				id="userID"					name="userID"				value="${userBean.userID }"/>
+		<input type="hidden"				id="userName" 				name="userName" 			value="${userBean.userName }"/>
+		<input type="hidden"				id="userMail" 				name="userMail" 			value="${userBean.userMail }"/>
+		<input type="hidden"				id="userNum" 				name="userNum" 				value="${userBean.userNum }"/>
+		<input type="hidden"				id="userAuth" 				name="userAuth" 			value="${userBean.userAuth }"/>
+	
+		<jsp:include page="/WEB-INF/form/top.jsp"></jsp:include>
+		
+		<div class="mm-menu-name"><h5>개인별 M/M (프로젝트 코드 추가/비활성화)</h5></div>
+		
+		<table class="mm-search">
+			<tr>
+				<th class="text-muted" style="width:60px; text-align: right;">작업월</th>
+				<td style="width:120px;">
+					<select id="search_date" name="search_date" class="form-control">
+						<option value="">작업월</option>
+						<c:forEach var='item' items="${lMonth }">
+							<option value="${item }" ${item == searchBean.search_date ? "selected='selected'" : ""}>${item }</option>
+						</c:forEach>
+					</select>
+
+				</td>
+				<th class="text-muted" style="width:120px; text-align: right;">프로젝트 명</th>
+				<td style="width:200px;">
+					<select id="search_project_seq" name="search_project_seq" class="form-control">
+						<option value="">프로젝트 명</option>
+						<c:forEach var='item' items="${lProjectCode }">
+							<option value="${item.i_seq_pk }" ${item.i_seq_pk == searchBean.search_project_seq ? "selected='selected'" : ""}>${item.v_project_name }</option>
+						</c:forEach>
+					</select>
+				</td>
+				<th class="text-muted" style="width:100px; text-align: right;">사용 유무</th>
+				<td style="width:120px;">
+					<select id="project_user_flag" name="project_user_flag" class="form-control">
+						<option value="" ${"" == searchBean.project_user_flag ? "selected='selected'" : ""}>전부</option>
+						<option value="Y" ${"Y" == searchBean.project_user_flag ? "selected='selected'" : ""}>사용</option>
+						<option value="N" ${"N" == searchBean.project_user_flag ? "selected='selected'" : ""}>미사용</option>
+					</select>
+
+				</td>
+				<td><button type="button" class="btn btn-secondary btn-sm" id="btn_search" name="btn_search">조회</button></td>
+			</tr>
+			<tr>
+				<td colspan="5" style="margin-top:10px;">
+					<button type="button" class="btn btn-secondary btn-sm" id="">다운로드</button>
+					<c:forEach var='item' items="${lMonth }" begin="0" end="0">
+						<button type="button" class="btn btn-secondary btn-sm" id="">${item } 데이터 가져오기</button>
+					</c:forEach>
+					<button type="button" class="btn btn-secondary btn-sm" id="">사용</button>
+					<button type="button" class="btn btn-secondary btn-sm" id="">미사용</button>
+					<button type="button" class="btn btn-secondary btn-sm" id="">추가</button>
+					<button type="button" class="btn btn-secondary btn-sm" id="">수정</button>
+				</td>
+			</tr>
+		</table>
+		
+		<table class="table">
+			<td>
+				<table class="table table-bordered">
+					<thead>
+						<tr class="table-primary">
+							<th scope="col" style="color: #848484;">선택</th>
+							<th scope="col" style="color: #848484;">사용 유무</th>
+							<th scope="col" style="color: #848484;">코드</th>
+							<th scope="col" style="color: #848484;">프로젝트 명</th>
+						</tr>
+					</thead>
+					<c:if test="${lProjectCode.size() != 0 }">
+						<c:forEach var="item" items="${lProjectCode }">
+							<tr>
+								<td><input type="checkbox" id="" name="list_sel" value="${item.i_seq_pk }"/></td>
+								<td>${item.v_disable }</td>
+								<td>${item.v_project_code }</td>
+								<td>${item.v_project_name }</td>
+							</tr>
+						</c:forEach>
+					</c:if>
+				</table>
+			</td>
+		</table>
+	
+	</form>
+</body>
+</html>

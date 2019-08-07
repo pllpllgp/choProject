@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.gravity.mm.mapper.UserMapper">
+
+	<!-- 유저 정보 조회 -->
+	<select id="getLoginInfo" parameterType="String" resultType="UserBean">
+		SELECT i_seq_pk as userSEQ
+			,v_user_id as userID
+			,v_mail_addr as userMail
+			,v_user_name_k as userName
+			,v_man_seq as userNum
+		FROM TBG_USER
+		WHERE v_user_id = #{userID}
+			AND v_useok = 'Y'
+	</select>
+	
+	
+	<!-- 관리자 권한 유무 조회 -->
+	<select id="getAuthCheck" parameterType="String" resultType="int">
+		SELECT COUNT(*)
+		FROM TBG_USER_AUTH
+		WHERE v_auth = 'G0013'
+			AND v_user_id = #{userSEQ}
+	</select>
+	
+	
+	<!-- 대리입력 유무 조회 -->
+	<select id="getPeopleList" parameterType="SearchBean" resultType="GetUserBean">
+		SELECT u.i_seq_pk as userSEQ
+			,u.v_man_seq as userNum
+		,u.v_user_name_k	as userName
+		FROM TBM_OTHER_PEOPLE_SUB ps
+		JOIN TBM_OTHER_PEOPLE p 
+			ON ps.i_other_people_pk = p.i_seq_pk
+		JOIN TBG_USER u 
+			ON p.i_user_number = u.i_seq_pk 
+		<where>
+			<if test="search_user_seq != null and search_user_seq != ''">
+				ps.i_to_user_number = #{search_user_seq}
+		  	</if>
+			<if test="search_date != null and search_date != ''"> 
+				AND CONVERT(VARCHAR(7), p.d_job_date, 120) = #{search_date}
+			</if>
+		</where>
+		 ORDER BY p.d_job_date DESC
+	</select>
+	
+	
+	<!-- 프로젝크 코드 목록 조회 -->
+	<select id="getProjectCode" parameterType="SearchBean" resultType="GetProjectCodeBean">
+		SELECT p.i_seq_pk
+			,p.v_op_type
+			,CONVERT(VARCHAR(7), p.d_job_date, 120) AS d_job_date
+			,p.v_disable
+			,p.v_project_code
+			,p.v_project_name
+			,p.v_apply
+			,p.d_indate
+			,p.d_update
+			,'그라비티' as s_op_type_name
+		FROM TBM_PROJECT_CODE p
+		<where>
+			<if test="search_date != null and search_date != ''"> 
+				CONVERT(VARCHAR(7), p.d_job_date, 120) = #{search_date}
+			</if>
+			<if test="project_user_flag != null and project_user_flag != ''"> 
+				AND p.v_disable = 'Y'
+			</if>	
+		</where>
+		ORDER BY p.v_project_name
+	</select>
+	
+	
+	<!-- 유저 기본 M/M 조회 -->
+	<select id="getUserDefaultMM" parameterType="SearchBean" resultType="GetDefaultMMBean">
+		SELECT dm.i_seq_pk
+			,CONVERT(VARCHAR(7), dm.d_job_date, 120) as d_job_date
+			,dm.v_disable
+			,dm.v_dept_code
+			,dm.i_dept_seq
+			,dm.v_dept_name
+			,dm.i_user_number
+			,dm.d_mm
+			,case when CONVERT(VARCHAR(10), dm.d_enter_date, 120)='1900-01-01' then '' else 
+				CONVERT(VARCHAR(10), dm.d_enter_date, 120) end AS d_enter_date
+			,case when CONVERT(VARCHAR(10), dm.d_retirement_date, 120)='1900-01-01' then '' else 
+				CONVERT(VARCHAR(10), dm.d_retirement_date, 120)end AS d_retirement_date
+			,dm.i_day_count
+			,dm.v_dept_code_name
+			,dm.v_complete
+			,'그라비티' as s_op_type_name
+			,u.v_user_name_k
+			,u.v_man_seq
+			,m.d_mm_user
+			,p.i_seq_pk as i_project_code_pk
+			,P.v_project_code
+			,P.v_project_name
+			,COUNT(*) OVER(PARTITION BY dm.i_seq_pk) as cnt
+			,SUM(m.d_mm_user) OVER(PARTITION BY dm.i_seq_pk) as d_mm_user_group_sum
+			,(
+				SELECT SUM(d_mm)
+				FROM TBM_DEFAULT_MM
+				WHERE v_apply = 'Y'
+					<if test="search_date != null and search_date != ''"> 
+						AND CONVERT(VARCHAR(7), d_job_date, 120) = #{search_date}
+					</if>
+					<if test="search_user_seq != null and search_user_seq != ''"> 
+						AND i_user_number = #{search_user_seq}
+					</if>
+					<if test="search_dept_seq != null and search_dept_seq != ''">
+						AND v_dept_code = (
+							SELECT TOP 1 v_dept_code  
+							FROM TBM_DEFAULT_MM 
+							WHERE i_dept_seq = #{search_dept_seq}
+							AND v_apply = 'Y'
+							<if test="search_date != null and search_date != ''"> 
+								AND CONVERT(VARCHAR(7), d_job_date, 120) = #{search_date}
+							</if>					       
+						)				   
+					</if>
+					<if test="search_disable != null and search_disable != ''">
+						AND v_disable = #{search_disable}
+					</if>
+			) as d_mm_sum
+			,(
+				SELECT SUM(d_mm_user)
+				FROM TBM_DEFAULT_MM dm
+				JOIN TBG_USER u 
+					ON dm.i_user_number = u.i_seq_pk
+				LEFT JOIN TBM_MM m 
+					ON dm.i_seq_pk = m.i_default_mm_pk
+				LEFT JOIN TBM_PROJECT_CODE p 
+					ON m.i_project_code_pk = p.i_seq_pk AND p.v_apply='Y'
+				WHERE dm.v_apply = 'Y'
+					<if test="search_date != null and search_date != ''"> 
+						AND CONVERT(VARCHAR(7), dm.d_job_date, 120) = #{search_date}
+					</if>
+					<if test="search_user_seq != null and search_user_seq != ''"> 
+						AND dm.i_user_number = #{search_user_seq}
+					</if>
+					<if test="search_dept_seq != null and search_dept_seq != ''"> 
+						AND dm.v_dept_code = (
+							SELECT TOP 1 v_dept_code  
+							FROM TBM_DEFAULT_MM 
+							WHERE i_dept_seq = #{search_dept_seq} 
+								AND v_apply = 'Y'
+								<if test="search_date != null and search_date != ''"> 
+									AND CONVERT(VARCHAR(7), d_job_date, 120) = #{search_date}
+								</if>
+						)	
+					</if>
+					<if test="search_disable != null and search_disable != ''">
+						AND dm.v_disable = #{search_disable}
+					</if>
+			) as d_mm_user_sum
+		FROM TBM_DEFAULT_MM dm
+		JOIN TBG_USER u 
+			ON dm.i_user_number = u.i_seq_pk
+		LEFT JOIN TBM_MM m 
+			ON dm.i_seq_pk = m.i_default_mm_pk
+		LEFT JOIN TBM_PROJECT_CODE p 
+			ON m.i_project_code_pk = p.i_seq_pk AND p.v_apply='Y'
+		WHERE dm.v_apply = 'Y'
+			<if test="search_date != null and search_date != ''"> 
+				AND CONVERT(VARCHAR(7), dm.d_job_date, 120) = #{search_date}
+			</if>
+			<if test="search_user_seq != null and search_user_seq != ''"> 
+				AND dm.i_user_number = #{search_user_seq}
+			</if>
+			<if test="search_dept_seq != null and search_dept_seq != ''"> 
+				AND dm.v_dept_code = (
+					SELECT TOP 1 v_dept_code  
+					FROM TBM_DEFAULT_MM 
+					WHERE i_dept_seq = #{search_dept_seq} 
+					AND v_apply = 'Y'
+						<if test="search_date != null and search_date != ''"> 
+							AND CONVERT(VARCHAR(7), d_job_date, 120) = #{search_date}
+						</if>
+					)	
+			</if>
+		<if test="search_disable != null and search_disable != ''">
+			AND dm.v_disable = #{search_disable}
+		</if>
+		ORDER BY dm.d_job_date DESC, u.v_user_name_k, p.v_project_name
+	</select>
+
+</mapper>

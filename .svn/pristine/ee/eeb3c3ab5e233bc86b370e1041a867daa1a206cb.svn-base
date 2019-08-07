@@ -1,0 +1,22 @@
+package com.gravity.mm.dao;
+
+import javax.inject.Inject;
+
+import org.apache.ibatis.session.SqlSession;
+import org.springframework.stereotype.Repository;
+
+import com.gravity.mm.bean.LoginBean;
+
+@Repository
+public class LoginHandler {
+	
+	@Inject
+	private SqlSession sqlSession;
+	
+	private static final String NAMESPACE = "com.gravity.mm.mapper.LoginMapper";
+	
+	public LoginBean login() {
+		return sqlSession.selectOne(NAMESPACE + ".login");
+	}
+
+}

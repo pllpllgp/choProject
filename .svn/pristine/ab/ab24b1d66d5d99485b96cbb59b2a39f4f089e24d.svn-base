@@ -1,0 +1,194 @@
+package com.gravity.mm.util;
+
+import java.io.OutputStream;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.xssf.streaming.SXSSFWorkbook;
+import org.springframework.web.servlet.view.AbstractView;
+
+import com.gravity.mm.bean.GetDefaultMMBean;
+
+public class ExcelView extends AbstractView {
+
+	@Override
+	protected void renderMergedOutputModel(Map<String, Object> model, HttpServletRequest request,
+			HttpServletResponse response) throws Exception {
+		
+		String sExcelType = (String) model.get("excelType");
+		String team_user_MM_seq = (String) model.get("search_user_seq");
+		String sSearch_date = (String) model.get("search_date");
+		List<GetDefaultMMBean> sLUserDefaultMM = (List<GetDefaultMMBean>) model.get("lUserDefaultMM");
+		
+		String[] sSearch_user_seq 				= team_user_MM_seq.split(",");
+		
+		String fileName = "";
+		SXSSFWorkbook workBook = new SXSSFWorkbook();
+		Sheet workSheet = workBook.createSheet("팀별MM");
+		
+		if(sExcelType.equals("TEAMEXCELDOWN")) {
+			
+			System.out.println(">>>>>>>>>>>>>>>>>>> ExcelDown = teamExcel <<<<<<<<<<<<<<<<<<<");
+			
+			fileName = sSearch_date + "_" + sLUserDefaultMM.get(0).getV_dept_name() + "_MM팀별입력현황.xlsx";
+			
+			int rowIndex = 1;
+			
+			Row row = workSheet.createRow(0);
+			workSheet.setColumnWidth(3, (workSheet.getColumnWidth(3)+(short)1800));
+			workSheet.setColumnWidth(7, (workSheet.getColumnWidth(7)+(short)1500));
+			workSheet.setColumnWidth(8, (workSheet.getColumnWidth(8)+(short)5000));
+			
+	        Cell cell = row.createCell(0);
+            cell.setCellValue("운영단위");
+            cell = row.createCell(1);
+            cell.setCellValue("작업년도");
+            cell = row.createCell(2);
+            cell.setCellValue("부서코드");
+            cell = row.createCell(3);
+            cell.setCellValue("부서명");
+            cell = row.createCell(4);
+            cell.setCellValue("사번");
+            cell = row.createCell(5);
+            cell.setCellValue("성명");
+            cell = row.createCell(6);
+            cell.setCellValue("당월 M/M");
+            cell = row.createCell(7);
+            cell.setCellValue("프로젝트 코드");
+            cell = row.createCell(8);
+            cell.setCellValue("프로젝트 명");
+            cell = row.createCell(9);
+            cell.setCellValue("투입 M/M");
+            
+			if(!sSearch_user_seq[0].equals("")) {
+				
+				for(int z = 0; sSearch_user_seq.length > z; z++) {
+					String teamUserSeq = sSearch_user_seq[z];
+					
+					for(int i = 0; i < sLUserDefaultMM.size(); i++) {
+						
+						if(String.valueOf(sLUserDefaultMM.get(i).getI_user_number()).equals(teamUserSeq)) {
+							row = workSheet.createRow(rowIndex);
+							
+					        if(i > 0) {
+					        	
+					        	if(!sLUserDefaultMM.get(i).getV_user_name_k().equals(sLUserDefaultMM.get(i-1).getV_user_name_k())) {
+					        		
+						            cell = row.createCell(0);
+						            cell.setCellValue(sLUserDefaultMM.get(i).getS_op_type_name());
+						            cell = row.createCell(1);
+						            cell.setCellValue(sLUserDefaultMM.get(i).getD_job_date());
+						            cell = row.createCell(2);
+						            cell.setCellValue(sLUserDefaultMM.get(i).getV_dept_code());
+						            cell = row.createCell(3);
+						            cell.setCellValue(sLUserDefaultMM.get(i).getV_dept_name());
+						            cell = row.createCell(4);
+						            cell.setCellValue(sLUserDefaultMM.get(i).getV_man_seq());
+						            cell = row.createCell(5);
+						            cell.setCellValue(sLUserDefaultMM.get(i).getV_user_name_k());
+						            cell = row.createCell(6);
+						            cell.setCellValue(sLUserDefaultMM.get(i).getD_mm());
+					        	}
+					        } else {
+						        	
+						        cell = row.createCell(0);
+						        cell.setCellValue(sLUserDefaultMM.get(i).getS_op_type_name());
+						        cell = row.createCell(1);
+						        cell.setCellValue(sLUserDefaultMM.get(i).getD_job_date());
+						        cell = row.createCell(2);
+						        cell.setCellValue(sLUserDefaultMM.get(i).getV_dept_code());
+						        cell = row.createCell(3);
+						        cell.setCellValue(sLUserDefaultMM.get(i).getV_dept_name());
+						        cell = row.createCell(4);
+						        cell.setCellValue(sLUserDefaultMM.get(i).getV_man_seq());
+						        cell = row.createCell(5);
+						        cell.setCellValue(sLUserDefaultMM.get(i).getV_user_name_k());
+						        cell = row.createCell(6);
+						        cell.setCellValue(sLUserDefaultMM.get(i).getD_mm());
+					        }
+					        
+				            cell = row.createCell(7);
+				            cell.setCellValue(sLUserDefaultMM.get(i).getV_project_code());
+				            cell = row.createCell(8);
+				            cell.setCellValue(sLUserDefaultMM.get(i).getV_project_name());
+				            cell = row.createCell(9);
+				            cell.setCellValue(sLUserDefaultMM.get(i).getD_mm_user());
+				            
+				            rowIndex++;
+				           
+						}
+						
+					}
+				}
+			} else {
+				
+				for(int i = 0; i < sLUserDefaultMM.size(); i++) {
+			        row = workSheet.createRow(rowIndex);
+			        
+			        if(i > 0) {
+			        	
+			        	if(!sLUserDefaultMM.get(i).getV_user_name_k().equals(sLUserDefaultMM.get(i-1).getV_user_name_k())) {
+			        		
+				            cell = row.createCell(0);
+				            cell.setCellValue(sLUserDefaultMM.get(i).getS_op_type_name());
+				            cell = row.createCell(1);
+				            cell.setCellValue(sLUserDefaultMM.get(i).getD_job_date());
+				            cell = row.createCell(2);
+				            cell.setCellValue(sLUserDefaultMM.get(i).getV_dept_code());
+				            cell = row.createCell(3);
+				            cell.setCellValue(sLUserDefaultMM.get(i).getV_dept_name());
+				            cell = row.createCell(4);
+				            cell.setCellValue(sLUserDefaultMM.get(i).getV_man_seq());
+				            cell = row.createCell(5);
+				            cell.setCellValue(sLUserDefaultMM.get(i).getV_user_name_k());
+				            cell = row.createCell(6);
+				            cell.setCellValue(sLUserDefaultMM.get(i).getD_mm());
+			        	}
+			        } else {
+				        	
+				        cell = row.createCell(0);
+				        cell.setCellValue(sLUserDefaultMM.get(i).getS_op_type_name());
+				        cell = row.createCell(1);
+				        cell.setCellValue(sLUserDefaultMM.get(i).getD_job_date());
+				        cell = row.createCell(2);
+				        cell.setCellValue(sLUserDefaultMM.get(i).getV_dept_code());
+				        cell = row.createCell(3);
+				        cell.setCellValue(sLUserDefaultMM.get(i).getV_dept_name());
+				        cell = row.createCell(4);
+				        cell.setCellValue(sLUserDefaultMM.get(i).getV_man_seq());
+				        cell = row.createCell(5);
+				        cell.setCellValue(sLUserDefaultMM.get(i).getV_user_name_k());
+				        cell = row.createCell(6);
+				        cell.setCellValue(sLUserDefaultMM.get(i).getD_mm());
+			        }
+			        
+		            cell = row.createCell(7);
+		            cell.setCellValue(sLUserDefaultMM.get(i).getV_project_code());
+		            cell = row.createCell(8);
+		            cell.setCellValue(sLUserDefaultMM.get(i).getV_project_name());
+		            cell = row.createCell(9);
+		            cell.setCellValue(sLUserDefaultMM.get(i).getD_mm_user());
+			            
+		            rowIndex++;
+					
+				}
+				
+			}
+			
+			response.setContentType("application/smnet");
+            response.setHeader("Content-Disposition","attachment; filename=\""+new String((fileName).getBytes("KSC5601"),"8859_1")+"\"");
+			OutputStream fos = response.getOutputStream();
+			workBook.write(fos);
+			fos.close();
+			
+		}
+		
+	}
+
+}

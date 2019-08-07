@@ -1,0 +1,33 @@
+package com.gravity.mm.dao;
+
+import java.util.List;
+
+import javax.inject.Inject;
+
+import org.apache.ibatis.session.SqlSession;
+import org.springframework.stereotype.Repository;
+
+import com.gravity.mm.bean.SearchBean;
+import com.gravity.mm.bean.UserBean;
+
+
+@Repository
+public class UserHandler {
+	
+	@Inject
+	private SqlSession sqlSession;
+	
+	private static final String NAMESPACE = "com.gravity.mm.mapper.UserMapper";
+	
+	//유저 정보 조회
+	public UserBean getLoginInfo(String userID) {
+		return sqlSession.selectOne(NAMESPACE + ".getLoginInfo", userID);
+	}
+	
+	
+	//대리입력 유무 조회
+	public List<UserBean> getPeopleList(SearchBean searchBean) {
+		return sqlSession.selectList(NAMESPACE + ".getPeopleList", searchBean);
+	}
+
+}

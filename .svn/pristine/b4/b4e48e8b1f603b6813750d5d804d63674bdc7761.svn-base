@@ -1,0 +1,216 @@
+package com.gravity.mm.action;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.ServletRequestUtils;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import com.gravity.mm.bean.GetDefaultMMBean;
+import com.gravity.mm.bean.GetProjectCodeBean;
+import com.gravity.mm.bean.GetUserBean;
+import com.gravity.mm.bean.SearchBean;
+import com.gravity.mm.bean.UserBean;
+import com.gravity.mm.bean.UserMMBean;
+import com.gravity.mm.service.IUserService;
+import com.gravity.mm.util.DateTime;
+
+import sun.rmi.runtime.Log;
+
+@Controller
+@RequestMapping("/")
+public class UserController {
+	
+	private static Logger LOG = Logger.getLogger(UserController.class);
+	
+	@Autowired IUserService ius;
+	
+	
+	//유저 페이지 처음 접속
+	@RequestMapping(value = "userMM", params = "methodType=nomal", method = RequestMethod.POST)
+	public String user(HttpServletRequest request, @ModelAttribute("userBean")UserBean userBean, Model model) {
+		
+		System.out.println(">>>>>>>>>>>>>>>>>>> UserMM Merthod = nomal <<<<<<<<<<<<<<<<<<<");
+		
+		System.out.println("userBean > " + userBean.getUserID());
+		
+		model.addAttribute("userBean", userBean);
+		
+		return "user/userMM";
+		
+
+	}
+	
+	
+	//날짜 검색으로 작성자 검색
+	@RequestMapping(value = "userMM", params = "methodType=dateSearch", method = RequestMethod.POST)
+	public String dateChoice(HttpServletRequest request, @ModelAttribute("userBean")UserBean userBean, Model model) {
+		
+		System.out.println(">>>>>>>>>>>>>>>>>>> UserMM Merthod = dateSearch <<<<<<<<<<<<<<<<<<<");
+		
+		GetUserBean getUserBean 	= new GetUserBean();
+		SearchBean searchBean		= new SearchBean();
+		
+		String search_date 			= request.getParameter("search_date");
+		
+		getUserBean.setUserSEQ(userBean.getUserSEQ());
+		getUserBean.setUserNum(userBean.getUserNum());
+		getUserBean.setUserName(userBean.getUserName());
+		searchBean.setSearch_user_seq(userBean.getUserSEQ());
+		searchBean.setSearch_date(search_date);
+		
+		List<GetUserBean> lPeople = ius.getPeopleList(searchBean);
+		lPeople.add(getUserBean);
+		
+		model.addAttribute("lPeople", lPeople);
+		model.addAttribute("userBean", userBean);
+		model.addAttribute("searchBean", searchBean);
+		
+		return "user/userMM";
+
+	}
+	
+	
+	//당월 MM 조회
+	@RequestMapping(value = "userMM", params = "methodType=search", method = RequestMethod.POST)
+	public String MMSearch(HttpServletRequest request, @ModelAttribute("userBean")UserBean userBean, @ModelAttribute("searchBean")SearchBean searchBean, Model model) {
+			
+		System.out.println(">>>>>>>>>>>>>>>>>>> UserMM Merthod = search <<<<<<<<<<<<<<<<<<<");
+		
+		boolean btn_flag = false;
+		
+		GetUserBean getUserBean 		= new GetUserBean();
+		SearchBean getSearchBean		= new SearchBean();
+		
+		
+		String search_user_seq 			= request.getParameter("search_user_seq");
+
+		searchBean.setSearch_user_seq(search_user_seq);
+		
+		searchBean.setProject_user_flag("Y");
+		List<GetProjectCodeBean> lProjectCode = ius.getProjectCode(searchBean);
+		List<GetDefaultMMBean> lUserDefaultMM = ius.getUserDefaultMM(searchBean);
+		
+		getUserBean.setUserSEQ(userBean.getUserSEQ());
+		getUserBean.setUserNum(userBean.getUserNum());
+		getUserBean.setUserName(userBean.getUserName());
+		getSearchBean.setSearch_user_seq(userBean.getUserSEQ());
+		getSearchBean.setSearch_date(searchBean.getSearch_date());
+		
+		List<GetUserBean> lPeople = ius.getPeopleList(getSearchBean);
+		lPeople.add(getUserBean);
+
+		if(lUserDefaultMM.size() != 0) {
+			
+			System.out.println("lUserDefaultMM.get(0).getV_disable() = " + lUserDefaultMM.get(0).getV_disable());
+			
+			if(lUserDefaultMM.get(0).getV_disable().equals("Y")) {
+				btn_flag = false;
+			} else {
+				btn_flag = true;
+			}
+			
+		} else {
+			btn_flag = false;
+		}
+			
+		model.addAttribute("lPeople", lPeople);
+		model.addAttribute("lProjectCode", lProjectCode);
+		model.addAttribute("lUserDefaultMM", lUserDefaultMM);
+		model.addAttribute("btn_flag", btn_flag);
+			
+		return "user/userMM";
+
+	}
+	
+	
+	//유저 M/M 중간 저장
+	@RequestMapping(value = "userMM", params = "methodType=write", method = RequestMethod.GET)
+	public String MMWrite(HttpServletRequest request, @ModelAttribute("userBean")UserBean userBean, Model model) {
+				
+		System.out.println(">>>>>>>>>>>>>>>>>>> UserMM Merthod = write <<<<<<<<<<<<<<<<<<<");
+			
+		SearchBean searchBean			= new SearchBean();
+		String search_date 				= request.getParameter("search_date");
+		String userSEQ	 				= request.getParameter("userSEQ");
+		
+		searchBean.setSearch_user_seq(userSEQ);
+		searchBean.setSearch_date(search_date);
+		
+		searchBean.setProject_user_flag("Y");
+		List<GetProjectCodeBean> lProjectCode = ius.getProjectCode(searchBean);
+		
+		model.addAttribute("lProjectCode", lProjectCode);
+		
+		return "user/writeUserMM";
+
+	}
+	
+	
+	//유저 M/M 중간 저장
+	@RequestMapping(value = "userMM", params = "methodType=save", method = RequestMethod.POST)
+	public String MMSave(HttpServletRequest request, @ModelAttribute("userBean")UserBean userBean, @ModelAttribute("searchBean")SearchBean searchBean, Model model) {
+					
+		System.out.println(">>>>>>>>>>>>>>>>>>> UserMM Merthod = save <<<<<<<<<<<<<<<<<<<");
+				
+		List<UserMMBean> list			= new ArrayList<UserMMBean>();
+		GetUserBean getUserBean 		= new GetUserBean();
+		SearchBean getSearchBean		= new SearchBean();
+			
+		boolean btn_flag = true;
+		String[] i_project_code 		= request.getParameterValues("i_project_code");
+		String[] d_mm_user 				= request.getParameterValues("d_mm_user");
+		String i_default_mm				= request.getParameter("i_mm_seq_pk");
+			
+		for(int i=0; i_project_code.length > i; i++) {
+			UserMMBean userMMBeans	= new UserMMBean();
+				
+			userMMBeans.setI_default_mm(i_default_mm);
+			userMMBeans.setI_project_code_pk(i_project_code[i]);
+			userMMBeans.setD_mm_user(d_mm_user[i]);
+				
+			list.add(userMMBeans);
+		}
+			
+		/*int iResult = ius.addUserMM(list);*/
+		List<GetProjectCodeBean> lProjectCode = ius.getProjectCode(searchBean);
+		List<GetDefaultMMBean> lUserDefaultMM = ius.getUserDefaultMM(searchBean);
+		
+		getUserBean.setUserSEQ(userBean.getUserSEQ());
+		getUserBean.setUserNum(userBean.getUserNum());
+		getUserBean.setUserName(userBean.getUserName());
+		getSearchBean.setSearch_user_seq(userBean.getUserSEQ());
+		getSearchBean.setSearch_date(searchBean.getSearch_date());
+			
+		List<GetUserBean> lPeople = ius.getPeopleList(getSearchBean);
+		lPeople.add(getUserBean);
+			
+		model.addAttribute("lPeople", lPeople);
+		model.addAttribute("lProjectCode", lProjectCode);
+		model.addAttribute("lUserDefaultMM", lUserDefaultMM);
+		model.addAttribute("btn_flag", btn_flag);
+			
+		return "user/userMM";
+
+	}
+	
+	
+	//날짜 검색
+	@ModelAttribute("lMonth")
+	public List<String> lMonth() throws Exception {
+		return DateTime.getMonthList();
+	}
+	
+}

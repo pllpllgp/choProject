@@ -1,0 +1,105 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=EUC-KR">
+<title>Gravity M/M</title>
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script type="text/javascript">
+	$(function() {
+		
+		$("#btn_search").click(function() {
+			//formClear();
+			$("#methodType").val("search");
+			if($("#search_job_date option:selected").val() == "" || 
+				$("#search_user_number option:selected").val() == ""){
+					$("#errorMsg").html("작업월과 성명을 선택해 주세요.");
+					return;
+			}
+			doSubmit();
+		});
+		
+	})
+	
+	//작업월 선택
+	function choiceDate(page) {
+		
+		$("#urlPage").val(page);
+		$("#methodType").val("dateSearch");
+		doSubmit();
+		
+	}
+	
+</script>
+</head>
+<body>
+	<form id="userInfo" method="post">
+		<input type="hidden"				id="urlPage" 				name="urlPage" 				value=""/>
+		<input type="hidden"				id="methodType" 			name="methodType" 			value=""/>
+		<input type="hidden"				id="userSEQ"				name="userSEQ" 				value="${userSEQ }"/>
+		<input type="hidden"				id="userID"					name="userID"				value="${userID }"/>
+		<input type="hidden"				id="userName" 				name="userName" 			value="${userName }"/>
+		<input type="hidden"				id="userMail" 				name="userMail" 			value="${userMail }"/>
+		<input type="hidden"				id="userNum" 				name="userNum" 				value="${userNum }"/>
+	
+		<jsp:include page="/WEB-INF/form/top.jsp"></jsp:include>
+		
+		<div class="mm-menu-name"><h5>개인별 M/M (확인자 지정)</h5></div>
+		
+		<table class="mm-search">
+			<tr>
+				<th>작업월</th>
+				<td>
+					<select class="selectpicker" data-live-search="true" id="search_date" onchange="choiceDate('userMM');">
+						<option value="">작업월</option>
+						<c:forEach var='item' items="${lMonth }">
+							<option value="${item }">${item }</option>
+						</c:forEach>
+					</select>
+				</td>
+				<th>부서명</th>
+				<td>
+					<select class="selectpicker" data-live-search="true" id="search_dept_name"">
+						<option value="">부서명</option>
+						<c:forEach var='item' items="${lMonth }">
+							<option value="${item }">${item }</option>
+						</c:forEach>
+					</select>
+				</td>
+				<td><button type="button" class="btn btn-secondary btn-sm" id="btn_search">조회</button></td>
+			</tr>
+			<tr>
+				<td><button type="button" class="btn btn-secondary btn-sm" id="btn_search">다운로드</button></td>
+				<td><button type="button" class="btn btn-secondary btn-sm" id="btn_search"> 데이터 가져오기</button></td>
+				<td><button type="button" class="btn btn-secondary btn-sm" id="btn_search">추가</button></td>
+				<td><button type="button" class="btn btn-secondary btn-sm" id="btn_search">수정</button></td>
+			</tr>
+		</table>
+		
+		<table class="table">
+			<td>
+				<table class="table table-bordered">
+					<thead>
+						<tr class="table-primary">
+							<th scope="col" style="color: #848484;">선택</th>
+							<th scope="col" style="color: #848484;">작업 년도</th>
+							<th scope="col" style="color: #848484;">부서 코드</th>
+							<th scope="col" style="color: #848484;">부서 명(ERP)</th>
+							<th scope="col" style="color: #848484;">부서 명</th>
+							<th scope="col" style="color: #848484;">사번</th>
+							<th scope="col" style="color: #848484;">성명</th>
+							<th scope="col" style="color: #848484;">입사일</th>
+							<th scope="col" style="color: #848484;">퇴사일</th>
+							<th scope="col" style="color: #848484;">급여 일수</th>
+							<th scope="col" style="color: #848484;">당월 M/M</th>
+						</tr>
+					</thead>
+				</table>
+			</td>
+		</table>
+	
+	</form>
+</body>
+</html>

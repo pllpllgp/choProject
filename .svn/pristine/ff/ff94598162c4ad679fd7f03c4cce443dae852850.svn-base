@@ -1,0 +1,20 @@
+package com.gravity.mm.service;
+
+import java.util.List;
+
+import com.gravity.mm.bean.GetDefaultMMBean;
+import com.gravity.mm.bean.GetTeamBean;
+import com.gravity.mm.bean.SearchBean;
+
+
+public interface ITeamService {
+	
+	
+	//확인자 권한 체크
+	public List<GetTeamBean> getConfirmorDept(SearchBean searchBean);
+	
+	
+	//팀 종합 M/M 조회
+	public List<GetDefaultMMBean> getUserProjectGroup(SearchBean searchBean);
+
+}

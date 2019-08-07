@@ -1,0 +1,108 @@
+package com.gravity.mm.action;
+
+import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.ServletRequestUtils;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import com.gravity.mm.bean.SearchBean;
+import com.gravity.mm.bean.UserBean;
+import com.gravity.mm.service.IUserService;
+import com.gravity.mm.util.DateTime;
+
+import sun.rmi.runtime.Log;
+
+@Controller
+@RequestMapping("/")
+public class UserController {
+	
+	private static Logger LOG = Logger.getLogger(UserController.class);
+	
+	@Autowired IUserService ius;
+	
+	
+	//유저 페이지 처음 접속
+	@RequestMapping(value = "userMM", method = RequestMethod.POST)
+	public String user(HttpServletRequest request, Model model) {
+		
+		String userSEQ 			= request.getParameter("userSEQ");
+		String userID 			= request.getParameter("userID");
+		String userName 		= request.getParameter("userName");
+		String userMail 		= request.getParameter("userMail");
+		String userNum 			= request.getParameter("userNum");
+		String search_date 			= request.getParameter("search_date");
+		
+		model.addAttribute("userSEQ", userSEQ);
+		model.addAttribute("userID", userID);
+		model.addAttribute("userName", userName);
+		model.addAttribute("userMail", userMail);
+		model.addAttribute("userNum", userNum);
+		model.addAttribute("search_date", search_date);
+		
+
+		return "user/userMM";
+		
+
+	}
+	
+	
+	//날짜 검색으로 작성자 검색
+	@RequestMapping(value = "userMM", params="methodType=dateSearch", method = RequestMethod.POST)
+	public String dateChoice(HttpServletRequest request, RedirectAttributes redirectAttrs, Model model) {
+		
+		SearchBean searchBean = new SearchBean();
+		UserBean userBean = new UserBean();
+		
+		String userSEQ 				= request.getParameter("userSEQ");
+		String userID 				= request.getParameter("userID");
+		String userName 			= request.getParameter("userName");
+		String userMail 			= request.getParameter("userMail");
+		String userNum 				= request.getParameter("userNum");
+		String search_date 			= request.getParameter("search_date");
+		
+		searchBean.setSearch_user_seq(userSEQ);
+		searchBean.setSearch_date(search_date);
+		userBean.setUserName(userName);
+		userBean.setUserSEQ(userSEQ);
+		
+		model.addAttribute("userSEQ", userSEQ);
+		model.addAttribute("userID", userID);
+		model.addAttribute("userName", userName);
+		model.addAttribute("userMail", userMail);
+		model.addAttribute("userNum", userNum);
+		model.addAttribute("search_date", search_date);
+		
+		List<UserBean> lPeople = ius.getPeopleList(searchBean);
+		lPeople.add(userBean);
+		
+		model.addAttribute("lPeople", lPeople);
+		
+		return "user/userMM";
+
+	}
+	
+	
+	/**
+	* 월 데이터 조회
+	* @param 
+	* @return lMonth (현재월 기준 -5월 목록)
+	* @throws Exception 
+	*/
+	@ModelAttribute("lMonth")
+	public List<String> lMonth() throws Exception{
+		return DateTime.getMonthList();
+	}
+	
+}

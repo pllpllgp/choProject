@@ -1,0 +1,130 @@
+package com.gravity.mm.action;
+
+import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+
+import com.gravity.mm.bean.GetDefaultMMBean;
+import com.gravity.mm.bean.GetProjectCodeBean;
+import com.gravity.mm.bean.GetTeamBean;
+import com.gravity.mm.bean.GetUserBean;
+import com.gravity.mm.bean.SearchBean;
+import com.gravity.mm.bean.UserBean;
+import com.gravity.mm.service.ITeamService;
+import com.gravity.mm.service.IUserService;
+import com.gravity.mm.util.DateTime;
+
+@Controller
+@RequestMapping("/")
+public class TeamController {
+	
+	private static Logger LOG = Logger.getLogger(TeamController.class);
+	
+	@Autowired ITeamService its;
+	@Autowired IUserService ius;
+	
+	//확인자 페이지 처음 접속
+	@RequestMapping(value = "teamMM", params = "methodType=nomal", method = RequestMethod.POST)
+	public String login(HttpServletRequest request, @ModelAttribute("userBean")UserBean userBean, Model model) {
+		
+		System.out.println(">>>>>>>>>>>>>>>>>>> TeamMM Merthod = nomal <<<<<<<<<<<<<<<<<<<");
+		
+		System.out.println("userBean > " + userBean.getUserID());
+		
+		model.addAttribute("userBean", userBean);
+		
+		return "team/teamMM";
+
+	}
+	
+	
+	//날짜 검색으로 부서
+	@RequestMapping(value = "teamMM", params = "methodType=dateSearch", method = RequestMethod.POST)
+	public String dateChoice(HttpServletRequest request, @ModelAttribute("userBean")UserBean userBean, Model model) {
+			
+		System.out.println(">>>>>>>>>>>>>>>>>>> TeamMM Merthod = dateSearch <<<<<<<<<<<<<<<<<<<");
+		
+		SearchBean searchBean		= new SearchBean();
+			
+		String search_date 			= request.getParameter("search_date");
+		
+		searchBean.setSearch_user_seq(userBean.getUserSEQ());
+		searchBean.setSearch_date(search_date);
+		
+		List<GetTeamBean> lTeam = its.getConfirmorDept(searchBean);
+		
+		model.addAttribute("lTeam", lTeam);
+		model.addAttribute("userBean", userBean);
+		model.addAttribute("searchBean", searchBean);
+			
+		return "team/teamMM";
+
+	}
+	
+	
+	//팀 M/M 검색
+	@RequestMapping(value = "teamMM", params = "methodType=search", method = RequestMethod.POST)
+	public String MMSearch(HttpServletRequest request, @ModelAttribute("userBean")UserBean userBean, @ModelAttribute("searchBean")SearchBean searchBean, Model model) {
+				
+		System.out.println(">>>>>>>>>>>>>>>>>>> TeamMM Merthod = search <<<<<<<<<<<<<<<<<<<");
+				
+		String btn_flag = "1";
+			
+		GetUserBean getUserBean 	= new GetUserBean();
+		SearchBean pSearchBean = new SearchBean();
+			
+		String search_dept_seq 		= request.getParameter("search_dept_seq");
+		String search_user_seq 		= request.getParameter("userSEQ");
+		
+		searchBean.setSearch_dept_seq(search_dept_seq);
+		searchBean.setSearch_date(searchBean.getSearch_date());
+		searchBean.setProject_user_flag("Y");
+		
+		pSearchBean.setSearch_date(searchBean.getSearch_date());
+		pSearchBean.setSearch_dept_seq(search_dept_seq);
+		pSearchBean.setSearch_user_seq(search_user_seq);
+		
+		
+		List<GetProjectCodeBean> lProjectCode 		= ius.getProjectCode(searchBean);
+		List<GetDefaultMMBean> lUserDefaultMM 		= ius.getUserDefaultMM(searchBean);
+		List<GetDefaultMMBean> lUserProjectGroup 	= its.getUserProjectGroup(searchBean);
+		List<GetTeamBean> lTeam 					= its.getConfirmorDept(pSearchBean);
+		
+		getUserBean.setUserSEQ(userBean.getUserSEQ());
+		getUserBean.setUserNum(userBean.getUserNum());
+		getUserBean.setUserName(userBean.getUserName());
+				
+		if(lUserDefaultMM.size() != 0) {
+			GetDefaultMMBean getDefaultMMBean = lUserDefaultMM.get(0);
+			btn_flag = getDefaultMMBean.getV_complete().equals("Y")?  "2" : "3";
+		} else {
+			btn_flag = "1";
+		}
+				
+		model.addAttribute("lTeam", lTeam);
+		model.addAttribute("userBean", userBean);
+		model.addAttribute("lProjectCode", lProjectCode);
+		model.addAttribute("lUserDefaultMM", lUserDefaultMM);
+		model.addAttribute("lUserProjectGroup", lUserProjectGroup);
+		model.addAttribute("btn_flag", btn_flag);
+				
+		return "team/teamMM";
+
+	}
+	
+	
+	//날짜 검색
+	@ModelAttribute("lMonth")
+	public List<String> lMonth() throws Exception {
+		return DateTime.getMonthList();
+	}
+
+}

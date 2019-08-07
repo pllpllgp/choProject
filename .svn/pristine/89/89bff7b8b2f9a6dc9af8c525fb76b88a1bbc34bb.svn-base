@@ -1,0 +1,9 @@
+package com.gravity.mm.service;
+
+import com.gravity.mm.bean.LoginBean;
+
+public interface LoginService {
+	
+	public LoginBean login();
+
+}

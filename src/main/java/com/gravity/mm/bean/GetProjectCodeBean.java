@@ -1,0 +1,107 @@
+package com.gravity.mm.bean;
+
+public class GetProjectCodeBean {
+	
+	private int i_seq_pk;
+	private String v_op_type;
+	private String v_disable;
+	private String d_job_date;
+	private String v_project_code;
+	private String v_project_name;
+	private String v_apply;
+	private String[] arr_v_project_code;
+	private String[] arr_v_project_name;
+	private String[] arr_v_disable;
+	private String[] arr_i_seq_pk;
+	
+	
+	public String[] getArr_v_project_name() {
+		return arr_v_project_name;
+	}
+	public void setArr_v_project_name(String[] arr_v_project_name) {
+		this.arr_v_project_name = arr_v_project_name;
+	}
+	
+	
+	public String[] getArr_v_disable() {
+		return arr_v_disable;
+	}
+	public void setArr_v_disable(String[] arr_v_disable) {
+		this.arr_v_disable = arr_v_disable;
+	}
+	
+	
+	public String[] getArr_i_seq_pk() {
+		return arr_i_seq_pk;
+	}
+	public void setArr_i_seq_pk(String[] arr_i_seq_pk) {
+		this.arr_i_seq_pk = arr_i_seq_pk;
+	}
+	
+	
+	public String[] getArr_v_project_code() {
+		return arr_v_project_code;
+	}
+	public void setArr_v_project_code(String[] arr_v_project_code) {
+		this.arr_v_project_code = arr_v_project_code;
+	}
+	
+	
+	public int getI_seq_pk() {
+		return i_seq_pk;
+	}
+	public void setI_seq_pk(int i_seq_pk) {
+		this.i_seq_pk = i_seq_pk;
+	}
+	
+	
+	public String getV_op_type() {
+		return v_op_type;
+	}
+	public void setV_op_type(String v_op_type) {
+		this.v_op_type = v_op_type;
+	}
+	
+	
+	public String getV_disable() {
+		return v_disable;
+	}
+	public void setV_disable(String v_disable) {
+		this.v_disable = v_disable;
+	}
+	
+	
+	public String getD_job_date() {
+		return d_job_date;
+	}
+	public void setD_job_date(String d_job_date) {
+		this.d_job_date = d_job_date;
+	}
+	
+	
+	public String getV_project_code() {
+		return v_project_code;
+	}
+	public void setV_project_code(String v_project_code) {
+		this.v_project_code = v_project_code;
+	}
+	
+	
+	public String getV_project_name() {
+		return v_project_name;
+	}
+	public void setV_project_name(String v_project_name) {
+		this.v_project_name = v_project_name;
+	}
+	
+	
+	public String getV_apply() {
+		return v_apply;
+	}
+	public void setV_apply(String v_apply) {
+		this.v_apply = v_apply;
+	}
+	
+	
+
+}

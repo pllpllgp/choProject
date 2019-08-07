@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.gravity.mm.mapper.AdminMapper">
+
+
+	<!-- 다음월 프로젝트 데이터 삭제 -->
+	<delete id="deleteProjectCode" parameterType="String">
+		DELETE FROM TBM_PROJECT_CODE
+ 		WHERE DATE_FORMAT(d_job_date, '%Y-%m-%d') = #{default_month}		 
+	</delete>
+	
+	
+	<!-- 전월 프로젝트 데이터 다음월 프로젝트 데이터로 입력 -->
+	<insert id="addPrevProjectCode" parameterType="AddPrevMonthBean">
+		INSERT INTO TBM_PROJECT_CODE
+           (v_op_type
+           ,d_job_date
+           ,v_disable
+           ,v_project_code
+           ,v_project_name
+           ,v_apply
+           ,d_indate
+           ,d_update)
+		SELECT 
+			  v_op_type
+			  ,STR_TO_DATE(#{default_month}, '%Y-%m-%d %H:%i:%s')
+			  ,v_disable
+			  ,v_project_code
+			  ,v_project_name
+			  ,v_apply	           
+			  ,now()
+			  ,now()
+		 FROM TBM_PROJECT_CODE
+ 		WHERE DATE_FORMAT(d_job_date, '%Y-%m-%d') = #{prev_month}		 
+	</insert>
+	
+	
+	<!-- 프로젝트 미사용 -->
+	<delete id="getProjectCodeUse" parameterType="GetProjectCodeBean">
+		UPDATE TBM_PROJECT_CODE
+		SET v_disable = #{v_disable}
+ 		WHERE i_seq_pk in
+ 		<foreach collection="arr_v_project_code" item="item" separator="," open="(" close=")">
+	 		#{item}
+		</foreach>
+	</delete>
+	
+	
+	<!-- 프로젝트 추가 -->
+	<insert id="getProjectInsert" parameterType="GetProjectCodeBean">
+		
+		INSERT INTO TBM_PROJECT_CODE
+			(v_op_type
+			,d_job_date
+			,v_disable
+			,v_project_code
+			,v_project_name
+			,v_apply
+			,d_indate
+			,d_update)
+		VALUES
+		<foreach collection="list" item="item" separator=",">
+			('AM001'
+			,DATE_FORMAT(now(), '%Y-%m-01 00:00:00')
+			,#{item.v_disable}
+			,#{item.v_project_code}
+			,#{item.v_project_name}
+			,'Y'	           
+			,now()
+			,now())
+		</foreach>
+	</insert>
+	
+	
+	<!-- 프로젝트 수정 -->
+	<delete id="getProjectEdit" parameterType="GetProjectCodeBean">
+		<foreach collection="list" item="item" separator=";">
+		UPDATE TBM_PROJECT_CODE 
+		SET d_update = now()
+			,v_disable = #{item.v_disable}
+			,v_project_code = #{item.v_project_code}
+			,v_project_name = #{item.v_project_name}
+ 		WHERE i_seq_pk = #{item.i_seq_pk}
+		</foreach>
+	</delete>
+	
+
+
+</mapper>

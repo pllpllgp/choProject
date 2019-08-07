@@ -1,0 +1,23 @@
+package com.gravity.mm.action;
+
+import org.apache.log4j.Logger;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+
+@Controller
+@RequestMapping("/")
+public class ProjectCodeContoller {
+	
+	private static Logger LOG = Logger.getLogger(ProjectCodeContoller.class);
+	
+	@RequestMapping(value = "projectCode", method = RequestMethod.POST)
+	public String login(Model model) {
+		
+		System.out.println("¼¼¼Ç °ª : projectCode");
+		return "admin/projectCode";
+
+	}
+
+}

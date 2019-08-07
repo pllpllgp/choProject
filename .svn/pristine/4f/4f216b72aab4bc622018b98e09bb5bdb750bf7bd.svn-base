@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.gravity.mm.mapper.UserMapper">
+
+	<!-- 유저 정보 조회 -->
+	<select id="getLoginInfo" parameterType="String" resultType="com.gravity.mm.bean.UserBean">
+		SELECT i_seq_pk as userSEQ
+               ,v_user_id as userID
+      		   ,v_mail_addr as userMail
+      		   ,v_user_name_k as userName
+      		   ,v_man_seq as userNum
+		FROM TBG_USER
+		WHERE v_user_id = #{userID}
+		 AND v_useok = 'Y'
+	</select>
+
+</mapper>

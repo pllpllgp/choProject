@@ -1,0 +1,15 @@
+@CHARSET "UTF-8";
+
+.mm-menu-name {
+	height: 30px; 
+	margin-top: 10px; 
+	margin-left: 15px; 
+	color: #868A08;
+}
+
+.mm-search {
+	height: 30px; 
+	margin-top: 10px; 
+	margin-left: 10px; 
+	margin-bottom: 10px;
+}

@@ -1,0 +1,9 @@
+package com.gravity.mm.service;
+
+import com.gravity.mm.bean.UserBean;
+
+public interface IUserService {
+	
+	public UserBean getLoginInfo(String userID);
+
+}

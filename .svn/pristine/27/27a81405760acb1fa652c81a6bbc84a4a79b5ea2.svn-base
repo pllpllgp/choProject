@@ -1,0 +1,21 @@
+package com.gravity.mm.service;
+
+import javax.inject.Inject;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.gravity.mm.bean.UserBean;
+import com.gravity.mm.dao.UserHandler;
+
+@Service
+public class UserService implements IUserService{
+	
+	@Inject
+	UserHandler dao;
+	
+	public UserBean getLoginInfo(String userID) {
+		return dao.getLoginInfo(userID);
+	}
+
+}

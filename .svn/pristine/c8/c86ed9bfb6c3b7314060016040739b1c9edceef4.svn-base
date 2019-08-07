@@ -1,0 +1,81 @@
+package com.gravity.mm.action;
+
+import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+
+import com.gravity.mm.bean.GetProjectCodeBean;
+import com.gravity.mm.bean.GetUserBean;
+import com.gravity.mm.bean.SearchBean;
+import com.gravity.mm.bean.UserBean;
+import com.gravity.mm.service.ITeamService;
+import com.gravity.mm.service.IUserService;
+import com.gravity.mm.util.DateTime;
+
+@Controller
+@RequestMapping("/")
+public class ProjectCodeContoller {
+	
+	private static Logger LOG = Logger.getLogger(ProjectCodeContoller.class);
+	
+	@Autowired ITeamService its;
+	@Autowired IUserService ius;
+	
+	@RequestMapping(value = "projectCode", params = "methodType=normal", method = RequestMethod.POST)
+	public String projectCode(HttpServletRequest request, @ModelAttribute("userBean")UserBean userBean, Model model) {
+		
+		System.out.println(">>>>>>>>>>>>>>>>>>> adminMM(projectCode) Merthod = normal <<<<<<<<<<<<<<<<<<<");
+		System.out.println("userBean > " + userBean.getUserID());
+		
+		model.addAttribute("userBean", userBean);
+		
+		return "admin/projectCode";
+
+	}
+	
+	
+	//날짜 및 특정 프로젝트 검색
+	@RequestMapping(value = "projectCode", params = "methodType=search", method = RequestMethod.POST)
+	public String dateChoice(HttpServletRequest request, @ModelAttribute("userBean")UserBean userBean, Model model) {
+		
+		System.out.println(">>>>>>>>>>>>>>>>>>> adminMM(projectCode) Merthod = projectSearch <<<<<<<<<<<<<<<<<<<");
+		
+		SearchBean searchBean						= new SearchBean();
+		
+		String search_date 							= request.getParameter("search_date");
+		String search_project_seq 					= request.getParameter("search_project_seq");
+		String project_user_flag 					= request.getParameter("project_user_flag");
+		
+		
+		searchBean.setSearch_date(search_date);
+		if(!search_project_seq.equals("")) {
+			searchBean.setSearch_project_seq(search_project_seq);
+		}
+		searchBean.setProject_user_flag(project_user_flag);
+		
+		List<GetProjectCodeBean> lProjectCode 		= ius.getProjectCode(searchBean);
+		
+		model.addAttribute("userBean", userBean);
+		model.addAttribute("searchBean", searchBean);
+		model.addAttribute("lProjectCode", lProjectCode);
+		
+		return "admin/projectCode";
+
+	}
+	
+	
+	//날짜 검색
+	@ModelAttribute("lMonth")
+	public List<String> lMonth() throws Exception {
+		return DateTime.getMonthList();
+	}
+
+}

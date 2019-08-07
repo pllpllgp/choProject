@@ -1,0 +1,529 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.gravity.mm.mapper.AdminMapper">
+
+
+	<!-- 다음월 프로젝트 데이터 삭제 -->
+	<delete id="deleteProjectCode" parameterType="String">
+		DELETE FROM TBM_PROJECT_CODE
+ 		WHERE DATE_FORMAT(d_job_date, '%Y-%m-%d') = #{default_month}		 
+	</delete>
+	
+	
+	<!-- 전월 프로젝트 데이터 다음월 프로젝트 데이터로 입력 -->
+	<insert id="addPrevProjectCode" parameterType="AddPrevMonthBean">
+		INSERT INTO TBM_PROJECT_CODE
+           (v_op_type
+           ,d_job_date
+           ,v_disable
+           ,v_project_code
+           ,v_project_name
+           ,v_apply
+           ,d_indate
+           ,d_update)
+		SELECT 
+			  v_op_type
+			  ,STR_TO_DATE(#{default_month}, '%Y-%m-%d %H:%i:%s')
+			  ,v_disable
+			  ,v_project_code
+			  ,v_project_name
+			  ,v_apply	           
+			  ,now()
+			  ,now()
+		FROM TBM_PROJECT_CODE
+ 		WHERE DATE_FORMAT(d_job_date, '%Y-%m-%d') = #{prev_month}		 
+	</insert>
+	
+	
+	<!-- 프로젝트 미사용 -->
+	<delete id="getProjectCodeUse" parameterType="GetProjectCodeBean">
+		UPDATE TBM_PROJECT_CODE
+		SET v_disable = #{v_disable}
+ 		WHERE i_seq_pk in
+ 		<foreach collection="arr_v_project_code" item="item" separator="," open="(" close=")">
+	 		#{item}
+		</foreach>
+	</delete>
+	
+	
+	<!-- 프로젝트 추가 -->
+	<insert id="getProjectInsert" parameterType="GetProjectCodeBean">
+		INSERT INTO TBM_PROJECT_CODE
+			(v_op_type
+			,d_job_date
+			,v_disable
+			,v_project_code
+			,v_project_name
+			,v_apply
+			,d_indate
+			,d_update)
+		VALUES
+			('AM001'
+			,STR_TO_DATE(#{d_job_date}, '%Y-%m-%d 00:00:00')
+			,#{v_disable}
+			,#{v_project_code}
+			,#{v_project_name}
+			,'Y'	           
+			,now()
+			,now())
+	</insert>
+	
+	
+	<!-- 프로젝트 수정 -->
+	<update id="getProjectEdit" parameterType="GetProjectCodeBean">
+		UPDATE TBM_PROJECT_CODE 
+		SET d_update = now()
+			,v_disable = #{v_disable}
+			,v_project_code = #{v_project_code}
+			,v_project_name = #{v_project_name}
+ 		WHERE i_seq_pk = #{i_seq_pk}
+	</update>
+	
+
+	<!-- 타인입력 월 조회 -->
+	<select id="getOtherPeople" parameterType="SearchBean" resultType="GetOtherPeopleBean">
+		SELECT o.i_seq_pk
+			,o.v_op_type
+			,DATE_FORMAT(d_job_date, '%Y-%m') as d_job_date
+			,o.i_user_number
+			,o.v_apply
+			,o.d_indate
+			,o.d_update
+			,u.v_man_seq
+			,u.v_user_name_k
+			,'그라비티' as s_op_type_name
+			,os.i_seq_pk i_to_seq_pk
+			,os.i_to_user_number
+			,us.v_man_seq v_to_man_seq
+			,us.v_user_name_k v_to_user_name_k
+			,COUNT(*) OVER(PARTITION BY o.i_seq_pk) as cnt  
+		FROM TBM_OTHER_PEOPLE o
+		JOIN TBM_OTHER_PEOPLE_SUB os ON o.i_seq_pk = os.i_other_people_pk
+		JOIN TBG_USER u ON o.i_user_number = u.i_seq_pk 
+		JOIN TBG_USER us ON os.i_to_user_number = us.i_seq_pk
+		WHERE DATE_FORMAT(d_job_date, '%Y-%m') = #{search_date}
+			AND o.v_apply = 'Y'
+	</select>
+	
+	
+	<!-- 유저 목록 조회(퇴사자 및 근무자) -->
+	<select id="getUserConfirmor" parameterType="String" resultType="GetUserBean">
+		SELECT u.i_seq_pk as userSEQ
+			,u.v_man_seq as userNum
+			,CASE WHEN u.v_useok = 'Y' 
+				THEN u.v_user_name_k 
+				ELSE CONCAT(u.v_user_name_k,'/퇴사')
+				END userName
+			,CASE WHEN (SELECT count(*)
+					FROM TBM_CONFIRMOR cm
+					WHERE DATE_FORMAT(cm.d_job_date, '%Y-%m') = #{lMonth}
+						AND u.i_seq_pk = cm.i_user_number
+						AND cm .v_apply = 'Y') != 0 
+				THEN '*'
+				ELSE ''
+				END v_confirmor
+			,(SELECT dm.v_dept_name 
+				FROM TBM_DEFAULT_MM dm 
+				WHERE DATE_FORMAT(dm.d_job_date, '%Y-%m') = #{lMonth}
+					AND u.i_seq_pk = dm.i_user_number
+					AND dm.v_apply = 'Y') as userDeptName
+		FROM TBG_USER u
+		WHERE u.v_man_seq is not null
+		ORDER BY u.v_user_name_k
+	</select>
+	
+	
+	<!-- 타인 입력 저장 -->
+	<insert id="getPeopleAdd" parameterType="GetOtherPeopleBean" useGeneratedKeys="true" keyProperty="i_seq_pk" keyColumn="i_seq_pk">
+		INSERT INTO TBM_OTHER_PEOPLE
+			(v_op_type
+			,d_job_date
+			,i_user_number
+			,v_apply
+			,d_indate
+			,d_update)
+		VALUES
+			('AM001'
+			,STR_TO_DATE(#{d_job_date}, '%Y-%m-%d %H:%i:%s')
+			,#{i_user_number}
+			,'Y'
+			,now()
+			,now())
+	</insert>
+	
+	
+	<!-- 타인 지정자 입력 저장 -->
+	<insert id="getOtherPeopleAdd" parameterType="GetOtherPeopleBean">
+		INSERT INTO TBM_OTHER_PEOPLE_SUB
+			(i_other_people_pk
+			,i_to_user_number)
+		VALUES
+			(#{i_seq_pk}
+			,#{i_to_user_number})
+	</insert>
+	
+	
+	<!-- 타인 입력 수정 -->
+	<update id="getPeopleEdit" parameterType="GetOtherPeopleBean">
+		UPDATE TBM_OTHER_PEOPLE
+		SET i_user_number = #{i_user_number}
+			,d_update = now() 
+		WHERE i_seq_pk = #{i_seq_pk}
+	</update>
+	
+	
+	<!-- 타인 지정자 입력 수정 -->
+	<update id="getOtherPeopleEdit" parameterType="GetOtherPeopleBean">
+		UPDATE TBM_OTHER_PEOPLE_SUB
+		SET i_to_user_number = #{i_to_user_number}
+		WHERE i_seq_pk = #{i_to_seq_pk}
+	</update>
+	
+	
+	<!-- 타인 입력 제거-->
+	<update id="getOtherDelete" parameterType="GetOtherPeopleBean">
+		UPDATE TBM_OTHER_PEOPLE
+		SET v_apply = 'N'
+		WHERE i_seq_pk in
+		<foreach collection="arr_v_other_seq" item="item" separator="," open="(" close=")">
+	 		#{item}
+		</foreach>
+	</update>
+	
+	
+	<!-- 확인자 조회 -->
+	<select id="getConfirmor" parameterType="SearchBean" resultType="GetConfirmorBean">
+		SELECT cm.i_seq_pk
+			,cm.v_op_type
+			,DATE_FORMAT(dm.d_job_date, '%Y-%m') AS d_job_date
+			,cm.i_user_number
+			,cm.v_apply
+			,cm.d_indate
+			,cm.d_update
+			,CASE WHEN cm.v_admin_flag = 'Y' 
+				THEN '*' 
+				ELSE '' 
+				END v_admin_flag
+			,'그라비티' as s_op_type_name
+			,u.v_user_name_k
+			,u.v_man_seq
+			,dm.v_complete
+		FROM TBM_CONFIRMOR cm
+		JOIN TBG_USER u ON cm.i_user_number = u.i_seq_pk
+		LEFT JOIN TBM_DEFAULT_MM dm on cm.i_user_number = dm.i_user_number
+			AND DATE_FORMAT(cm.d_job_date, '%Y-%m') = DATE_FORMAT(dm.d_job_date, '%Y-%m')
+		WHERE DATE_FORMAT(cm.d_job_date, '%Y-%m') = #{search_date}
+			AND cm.v_apply = 'Y'
+		ORDER BY u.v_user_name_k
+	</select>
+	
+	
+	<!-- 다음월 확인자 데이터 삭제 -->
+	<delete id="deleteConfirmor" parameterType="String">
+		DELETE FROM TBM_CONFIRMOR
+ 		WHERE DATE_FORMAT(d_job_date, '%Y-%m-%d') = #{default_month}		 
+	</delete>
+	
+	
+	<!-- 전월 확인자 데이터 다음월 확인자 데이터로 입력 -->
+	<insert id="addPrevConfirmor" parameterType="AddPrevMonthBean">
+		INSERT INTO TBM_CONFIRMOR
+			(v_op_type
+			,d_job_date
+			,i_user_number
+			,v_apply
+			,v_admin_flag
+			,d_indate
+			,d_update)
+		SELECT 
+			  v_op_type
+			  ,STR_TO_DATE(#{default_month}, '%Y-%m-%d %H:%i:%s')
+			  ,i_user_number
+			  ,v_apply
+			  ,v_admin_flag       
+			  ,now()
+			  ,now()
+		FROM TBM_CONFIRMOR
+ 		WHERE DATE_FORMAT(d_job_date, '%Y-%m-%d') = #{prev_month}	
+ 			AND v_admin_flag = 'Y'	 
+	</insert>
+	
+	
+	<!-- 다음월 M/M 데이터 삭제 -->
+	<delete id="deleteDefaultMM" parameterType="String">
+		DELETE FROM TBM_DEFAULT_MM
+ 		WHERE DATE_FORMAT(d_job_date, '%Y-%m-%d') = #{default_month}		 
+	</delete>
+	
+	
+	<!-- 전월  M/M 데이터 다음월 M/M 데이터로 입력 -->
+	<insert id="addPrevDefaultMM" parameterType="AddPrevMonthBean">
+		INSERT INTO TBM_DEFAULT_MM
+			(v_op_type
+			,d_job_date
+			,v_disable
+			,v_dept_code
+			,v_dept_code_name
+			,i_dept_seq
+			,v_dept_name
+			,i_user_number
+			,d_mm
+			,d_enter_date
+			,d_retirement_date
+			,i_day_count           
+			,v_apply
+			,d_indate
+			,d_update
+			,v_complete)
+		SELECT 
+			v_op_type
+			,STR_TO_DATE(#{default_month}, '%Y-%m-%d %H:%i:%s')
+			,'N'
+			,v_dept_code
+			,v_dept_code_name
+			,i_dept_seq
+			,v_dept_name
+			,i_user_number
+			,d_mm
+			,d_enter_date
+			,d_retirement_date
+			,#{month_count}
+			,v_apply	           
+			,now()
+			,now()
+			,'N'
+		FROM TBM_DEFAULT_MM
+ 		WHERE DATE_FORMAT(d_job_date, '%Y-%m-%d') = #{prev_month}	
+			AND v_apply = 'Y'	 
+	</insert>
+	
+	
+	<!-- 확인자 등록 -->
+	<insert id="getConfirmorAdd" parameterType="GetConfirmorBean">
+		INSERT INTO TBM_CONFIRMOR
+			(v_op_type
+			,d_job_date
+			,i_user_number
+			,v_apply
+			,v_admin_flag
+			,d_indate
+			,d_update)
+		VALUES 
+			('AM001'
+			,STR_TO_DATE(#{d_job_date}, '%Y-%m-%d %H:%i:%s')
+			,#{i_seq_pk}
+			,'Y'
+			,'Y'
+			,now()
+			,now())
+	</insert>
+	
+	
+	<!-- 확인자 수정 -->
+	<update id="getConfirmorEdit" parameterType="GetConfirmorBean">
+		UPDATE TBM_CONFIRMOR 
+		SET i_user_number = #{i_seq_pk}
+			d_update = now()
+	</update>
+	
+	
+	<!-- 확인자 제거 -->
+	<update id="getConfirmorDelete" parameterType="GetConfirmorBean">
+		UPDATE TBM_CONFIRMOR 
+		SET v_apply = 'N'
+		WHERE i_seq_pk in
+		<foreach collection="arr_v_confirmor_seq" item="item" separator="," open="(" close=")">
+	 		#{item}
+		</foreach>
+	</update>
+
+
+	<!-- 부서 조회 -->
+	<select id="getDept" resultType="GetDeptBean">
+		SELECT a.i_seq_pk
+			,a.v_dept_name_k    
+			,(SELECT v_dept_name_k 
+				FROM TBG_DEPT 
+				WHERE i_seq_pk = a.i_dept_up 
+					AND v_useok='Y') as v_up_dept_name_k
+			,i_sort
+			,i_step
+			,v_useok
+			,i_dept_up
+		FROM (SELECT i_seq_pk
+					,v_dept_name_k
+					,i_dept_up
+					,i_sort
+					,i_step
+					,v_useok
+				FROM TBG_DEPT
+				WHERE v_useok = 'Y') as a
+		ORDER BY i_step,i_sort
+	</select>
+	
+	
+	<!-- 유저 조회 -->
+	<select id="getUser" resultType="GetUserBean">
+		SELECT i_seq_pk as userSEQ
+			,v_man_seq as userNum
+			,CASE WHEN v_useok = 'Y' 
+				THEN v_user_name_k 
+				ELSE CONCAT(v_user_name_k, ' /퇴사')
+				END as userName
+		FROM TBG_USER
+		WHERE v_man_seq is not null
+		ORDER BY v_man_seq
+	</select>
+	
+	
+	<!-- 당월 M/M입력 조회 -->
+	<select id="getDefaultMM" parameterType="SearchBean" resultType="GetDefaultMMBean">
+		SELECT *
+			,(SELECT SUM(d_mm)
+				FROM (SELECT dm.i_seq_pk
+						,dm.v_op_type
+						,DATE_FORMAT(dm.d_job_date, '%Y-%m') as d_job_date
+						,dm.v_disable
+						,dm.v_dept_code
+						,dm.v_dept_code_name
+						,dm.i_dept_seq
+						,dm.v_dept_name
+						,dm.i_user_number
+						,dm.d_mm
+						,dm.v_apply
+						,dm.d_indate
+						,dm.d_update
+						,CASE WHEN DATE_FORMAT(dm.d_enter_date, '%Y-%m')='1900-01' 
+							THEN '' 
+							ELSE DATE_FORMAT(dm.d_enter_date, '%Y-%m') 
+							END as d_enter_date
+						,CASE WHEN DATE_FORMAT(dm.d_retirement_date, '%Y-%m-%d')='1900-01' 
+							THEN '' 
+							ELSE DATE_FORMAT(dm.d_retirement_date, '%Y-%m') 
+							END as d_retirement_date
+						,dm.i_day_count
+						,'그라비티' as s_op_type_name
+						,u.v_user_name_k
+						,u.v_man_seq
+					FROM TBM_DEFAULT_MM dm
+					JOIN TBG_USER u on dm.i_user_number = u.i_seq_pk
+					WHERE dm.v_apply = 'Y'
+						AND DATE_FORMAT(dm.d_job_date, '%Y-%m') = #{search_date}
+						<if test="search_dept_seq != null and search_dept_seq != ''"> 
+							AND i_dept_seq = #{search_dept_seq}
+						</if>
+					) as a
+			) as d_mm_sum
+		FROM (SELECT dm.i_seq_pk
+					,dm.v_op_type
+					,DATE_FORMAT(dm.d_job_date, '%Y-%m') as d_job_date
+					,dm.v_disable
+					,dm.v_dept_code
+					,dm.v_dept_code_name
+					,dm.i_dept_seq
+					,dm.v_dept_name
+					,dm.i_user_number
+					,dm.d_mm
+					,dm.v_apply
+					,dm.d_indate
+					,dm.d_update
+					,CASE WHEN DATE_FORMAT(dm.d_enter_date, '%Y-%m')='1900-01'
+						THEN '' 
+						ELSE DATE_FORMAT(dm.d_enter_date, '%Y-%m') 
+						END as d_enter_date
+					,CASE WHEN DATE_FORMAT(dm.d_retirement_date, '%Y-%m')='1900-01'
+						THEN '' 
+						ELSE DATE_FORMAT(dm.d_retirement_date, '%Y-%m')
+						END as d_retirement_date
+					,dm.i_day_count
+					,'그라비티' as s_op_type_name
+					,u.v_user_name_k
+					,u.v_man_seq
+				FROM TBM_DEFAULT_MM dm
+				JOIN TBG_USER u on dm.i_user_number = u.i_seq_pk
+				WHERE dm.v_apply = 'Y'
+					AND DATE_FORMAT(dm.d_job_date, '%Y-%m') = #{search_date}
+					<if test="search_dept_seq != null and search_dept_seq != ''"> 
+						AND i_dept_seq = #{search_dept_seq}
+					</if>
+			) as a
+		ORDER BY a.v_dept_name, v_user_name_k
+	</select>
+	
+	
+	<!-- 당월  M/M 데이터 추가 -->
+	<insert id="addDefaultMM" parameterType="DefaultMMBean">
+		INSERT INTO TBM_DEFAULT_MM
+			(v_op_type
+			,d_job_date
+			,v_disable
+			,v_dept_code
+			,v_dept_code_name
+			,i_dept_seq
+			,v_dept_name
+			,i_user_number
+			,d_mm
+			,d_enter_date
+			<if test="d_retirement_date != null and d_retirement_date != ''"> 
+				,d_retirement_date
+			</if>
+			,i_day_count           
+			,v_apply
+			,i_reg_user_number
+			,d_indate
+			,i_update_user_number
+			,d_update
+			,v_complete)
+		VALUES 
+			('AM001'
+			,STR_TO_DATE(#{d_job_date}, '%Y-%m-%d %H:%i:%s')
+			,'N'
+			,#{v_dept_code}
+			,#{v_dept_code_name}
+			,#{i_dept_seq}
+			,#{v_dept_name}
+			,#{i_user_number}
+			,#{d_mm}
+			,STR_TO_DATE(#{d_enter_date}, '%Y-%m-%d %H:%i:%s')
+			<if test="d_retirement_date != null and d_retirement_date != ''"> 
+				,STR_TO_DATE(#{d_retirement_date}, '%Y-%m-%d %H:%i:%s')
+			</if>
+			,#{i_day_count}
+			,'Y'
+			,#{i_reg_user_number}
+			,now()
+			,#{i_update_user_number}
+			,now()
+			,'N')
+	</insert>
+	
+	
+	<!-- 당월  M/M 데이터 수정 -->
+	<update id="updateDefaultMM" parameterType="DefaultMMBean">
+		UPDATE TBM_DEFAULT_MM
+		SET v_dept_code = #{v_dept_code}
+			,v_dept_code_name = #{v_dept_code_name} 
+			,i_dept_seq = #{i_dept_seq}
+			,v_dept_name = #{v_dept_name}
+			,i_user_number = #{i_user_number}
+			,d_mm = #{d_mm}
+			,d_enter_date = STR_TO_DATE(#{d_enter_date}, '%Y-%m-%d %H:%i:%s')
+			<if test="d_retirement_date != null and d_retirement_date != ''"> 
+				,d_retirement_date = STR_TO_DATE(#{d_retirement_date}, '%Y-%m-%d %H:%i:%s')
+			</if>
+			,i_day_count = #{i_day_count}
+			,d_update = now()
+		WHERE i_seq_pk = #{i_seq_pk}
+	</update>
+	
+	
+	<!-- 당월  M/M 데이터 수정 -->
+	<update id="getCompleteMM" parameterType="ConfirmorBean">
+		UPDATE TBM_DEFAULT_MM SET
+			v_disable = #{v_disable}
+			,d_update = now()
+		WHERE i_seq_pk = #{i_seq_pk}
+	</update>
+
+</mapper>
