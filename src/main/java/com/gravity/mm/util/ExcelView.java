@@ -7,16 +7,21 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.springframework.web.servlet.view.AbstractView;
 
+import com.gravity.mm.bean.GetConfirmorBean;
 import com.gravity.mm.bean.GetDefaultMMBean;
 import com.gravity.mm.bean.GetProjectCodeBean;
 
 public class ExcelView extends AbstractView {
+	
+	private static Logger log = LogManager.getLogger(ExcelView.class);
 
 	@Override
 	protected void renderMergedOutputModel(Map<String, Object> model, HttpServletRequest request,
@@ -38,6 +43,7 @@ public class ExcelView extends AbstractView {
 			Sheet workSheet = workBook.createSheet("팀별MM");
 			
 			System.out.println(">>>>>>>>>>>>>>>>>>> ExcelDown = teamExcel <<<<<<<<<<<<<<<<<<<");
+			log.info(">>>>>>>>>>>>>>>>>>> ExcelDown = teamExcel <<<<<<<<<<<<<<<<<<<");
 			
 			fileName = sSearch_date + "_" + sLUserDefaultMM.get(0).getV_dept_name() + "_MM팀별입력현황.xlsx";
 			
@@ -194,6 +200,7 @@ public class ExcelView extends AbstractView {
 			Sheet workSheet = workBook.createSheet("프로젝트 목록");
 			
 			System.out.println(">>>>>>>>>>>>>>>>>>> ExcelDown = adminProjectCodeExcel <<<<<<<<<<<<<<<<<<<");
+			log.info(">>>>>>>>>>>>>>>>>>> ExcelDown = adminProjectCodeExcel <<<<<<<<<<<<<<<<<<<");
 			
 			fileName =  "MM 프로젝트 목록.xlsx";
 			
@@ -265,7 +272,8 @@ public class ExcelView extends AbstractView {
 			
 			Sheet workSheet = workBook.createSheet("당월 MM 입력");
 					
-			System.out.println(">>>>>>>>>>>>>>>>>>> ExcelDown = adminTeamExcel <<<<<<<<<<<<<<<<<<<");
+			System.out.println(">>>>>>>>>>>>>>>>>>> ExcelDown = dafaultExcel <<<<<<<<<<<<<<<<<<<");
+			log.info(">>>>>>>>>>>>>>>>>>> ExcelDown = dafaultExcel <<<<<<<<<<<<<<<<<<<");
 					
 			int rowIndex = 1;
 					
@@ -379,6 +387,7 @@ public class ExcelView extends AbstractView {
 			Sheet workSheet = workBook.createSheet("팀별MM");
 			
 			System.out.println(">>>>>>>>>>>>>>>>>>> ExcelDown = adminTeamExcel <<<<<<<<<<<<<<<<<<<");
+			log.info(">>>>>>>>>>>>>>>>>>> ExcelDown = adminTeamExcel <<<<<<<<<<<<<<<<<<<");
 			
 			int rowIndex = 1;
 			
@@ -523,6 +532,83 @@ public class ExcelView extends AbstractView {
 		            rowIndex++;
 				}
 			}
+			
+		//확인자 지정(관리자) 페이지
+		} else if(sExcelType.equals("confirmorExcel")) {
+			
+			List<GetConfirmorBean> sLConfirmor = (List<GetConfirmorBean>) model.get("lConfirmor");
+			String confirmorSEQ = (String) model.get("confirmorSeq");
+			String[] sConfirmorSeq 				= confirmorSEQ.split(",");
+			
+			Sheet workSheet = workBook.createSheet("확인자 목록");
+			
+			System.out.println(">>>>>>>>>>>>>>>>>>> ExcelDown = conformorExcel <<<<<<<<<<<<<<<<<<<");
+			log.info(">>>>>>>>>>>>>>>>>>> ExcelDown = conformorExcel <<<<<<<<<<<<<<<<<<<");
+			
+			fileName =  "MM 확인자 목록.xlsx";
+			
+			int rowIndex = 1;
+			
+			Row row = workSheet.createRow(0);
+			workSheet.setColumnWidth(0, (workSheet.getColumnWidth(0)+(short)1800));
+			workSheet.setColumnWidth(1, (workSheet.getColumnWidth(1)+(short)3000));
+			workSheet.setColumnWidth(2, (workSheet.getColumnWidth(2)+(short)5000));
+			workSheet.setColumnWidth(3, (workSheet.getColumnWidth(3)+(short)1800));
+			
+	        Cell cell = row.createCell(0);
+            cell.setCellValue("작업년도");
+            cell = row.createCell(1);
+            cell.setCellValue("사번");
+            cell = row.createCell(2);
+            cell.setCellValue("성명");
+            cell = row.createCell(3);
+            cell.setCellValue("팀 마감여부");
+				
+            if(!sConfirmorSeq[0].equals("")) {
+            	
+            	for(int z=0; sConfirmorSeq.length > z; z++ ) {
+            		String confirmorSeq = sConfirmorSeq[z];
+            		
+					for(int i = 0; i < sLConfirmor.size(); i++) {
+						
+						if(String.valueOf(sLConfirmor.get(i).getI_seq_pk()).equals(confirmorSeq)) {
+						
+							row = workSheet.createRow(rowIndex);
+							        	
+							cell = row.createCell(0);
+							cell.setCellValue(sLConfirmor.get(i).getD_job_date());
+							cell = row.createCell(1);
+							cell.setCellValue(sLConfirmor.get(i).getV_man_seq());
+							cell = row.createCell(2);
+							cell.setCellValue(sLConfirmor.get(i).getV_user_name_k());
+							cell = row.createCell(3);
+							cell.setCellValue(sLConfirmor.get(i).getV_complete());
+							cell = row.createCell(4);
+						            
+							rowIndex++;
+						}
+					}	
+            	}
+            	
+            } else {
+            	
+				for(int i = 0; i < sLConfirmor.size(); i++) {
+					
+					row = workSheet.createRow(rowIndex);
+						        	
+					cell = row.createCell(0);
+					cell.setCellValue(sLConfirmor.get(i).getD_job_date());
+					cell = row.createCell(1);
+					cell.setCellValue(sLConfirmor.get(i).getV_man_seq());
+					cell = row.createCell(2);
+					cell.setCellValue(sLConfirmor.get(i).getV_user_name_k());
+					cell = row.createCell(3);
+					cell.setCellValue(sLConfirmor.get(i).getV_complete());
+					cell = row.createCell(4);
+					            
+					rowIndex++;
+				}
+            }
 		}
 		
 		response.setContentType("application/smnet");

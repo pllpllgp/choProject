@@ -10,7 +10,25 @@ public class SearchBean {
 	private String search_disable;
 	private String search_dept_seq;
 	private String search_project_seq;
+	private String search_nowMonth;
+	private String search_prevMonth;
 	
+	
+	
+	public String getSearch_nowMonth() {
+		return search_nowMonth;
+	}
+	public void setSearch_nowMonth(String search_nowMonth) {
+		this.search_nowMonth = search_nowMonth;
+	}
+	
+	
+	public String getSearch_prevMonth() {
+		return search_prevMonth;
+	}
+	public void setSearch_prevMonth(String search_prevMonth) {
+		this.search_prevMonth = search_prevMonth;
+	}
 	
 	
 	public String getSearch_project_seq() {

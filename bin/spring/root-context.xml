@@ -24,12 +24,6 @@
 		<property name="url" value="${db.url}" />
 		<property name="username" value="${db.userid}" />
 		<property name="password" value="${db.passwd}" />
-		<!-- <property name="maxActive" value="${db.maxActive}"/>
-		<property name="maxWait" value="${db.maxWait}"/>
-		<property name="maxIdle" value="${db.maxIdle}"/>
-		<property name="defaultAutoCommit" value="true"/>
-		<property name="validationQuery" value="select 1"/>
-		<property name="validationQueryTimeout" value="${db.queryTimeOut}"/> -->
 	</bean>
 		
 	<!-- sql session factory -->

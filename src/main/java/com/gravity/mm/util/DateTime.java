@@ -51,21 +51,37 @@ public final class DateTime {
 		
 		int iYear = getYear();
 		int iMonth = 0;
+		int monList = 0;
+		
 		if(user.equals("user")) {
+			
+			monList = 5;
 			iMonth = getMonth()-1;
+			
+			if(iMonth == 0) {
+				
+				iYear -= 1;
+				iMonth = 12;
+			}
 		} else if(user.equals("admin")) {
+			
+			monList = 6;
 			iMonth = getMonth();
 		}
 		List<String> lMonth = new ArrayList<String>();
-		
-		for (int i = 0; i < 5; i++) {
+		System.out.println("iMonth : " + iMonth);
+		for (int i = 0; i < monList; i++) {
+			
 			String sMonth = Integer.toString(iYear)+"-" ;
 				   sMonth += Integer.toString(iMonth).length() == 1 ? "0" + Integer.toString(iMonth) : Integer.toString(iMonth);
 			lMonth.add(sMonth);
-			if (1==iMonth) {
-				iMonth = 12;
+			
+			if (iMonth == 1) {
+				
 				iYear -= 1;
+				iMonth = 12;
 			}else {
+				
 				iMonth -= 1;
 			}
 		}

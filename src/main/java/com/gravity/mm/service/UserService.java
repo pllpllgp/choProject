@@ -5,18 +5,18 @@ import java.util.List;
 import javax.inject.Inject;
 
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.gravity.mm.bean.GetDefaultMMBean;
 import com.gravity.mm.bean.GetProjectCodeBean;
 import com.gravity.mm.bean.GetUserBean;
 import com.gravity.mm.bean.SearchBean;
-import com.gravity.mm.bean.UserBean;
 import com.gravity.mm.bean.UserMMBean;
+import com.gravity.mm.bean.UserBean;
 import com.gravity.mm.dao.UserHandler;
 
 @Service
 public class UserService implements IUserService{
+	
 	
 	@Inject
 	UserHandler dao;
@@ -24,6 +24,12 @@ public class UserService implements IUserService{
 	//유저 정보 조회
 	public UserBean getLoginInfo(String userID) {
 		return dao.getLoginInfo(userID);
+	}
+	
+	
+	//유저 팀별 관리 페이지 권한 유무 확인
+	public int getConfirmorDeptAuth(SearchBean searchBean) {
+		return dao.getConfirmorDeptAuth(searchBean);
 	}
 	
 	
@@ -75,3 +81,4 @@ public class UserService implements IUserService{
 	}
 		
 }
+

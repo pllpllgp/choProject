@@ -9,6 +9,33 @@ public class GetDeptBean {
 	private String i_sort;
 	private String v_useok;
 	private String i_dept_up;
+	private String v_user_name;
+	private String v_user_seq;
+	private String v_user_ip;
+	
+	
+	public String getV_user_ip() {
+		return v_user_ip;
+	}
+	public void setV_user_ip(String v_user_ip) {
+		this.v_user_ip = v_user_ip;
+	}
+	
+	
+	public String getV_user_name() {
+		return v_user_name;
+	}
+	public void setV_user_name(String v_user_name) {
+		this.v_user_name = v_user_name;
+	}
+	
+	
+	public String getV_user_seq() {
+		return v_user_seq;
+	}
+	public void setV_user_seq(String v_user_seq) {
+		this.v_user_seq = v_user_seq;
+	}
 	
 	
 	public String getI_dept_up() {

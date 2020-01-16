@@ -35,6 +35,10 @@ public interface IAdminService {
 	public List<GetUserBean> getUserConfirmor(String lMonth);
 	
 	
+	//전월 타인 입력 데이터 다음월 타인 입력으로 입력
+	public int addPrevOtherPeople(AddPrevMonthBean addPrevMonthBean);
+	
+	
 	//타인 입력 추가/수정 저장
 	public int getPeopleSave(String peopleState, GetOtherPeopleBean lOtherPeople);
 	
@@ -67,8 +71,24 @@ public interface IAdminService {
 	public List<GetDeptBean> getDept();
 	
 	
-	//유저 조회
+	//직원 조회
 	public List<GetUserBean> getUser();
+	
+	
+	//직원 추가/수정
+	public int getUserInsertEdit(GetUserBean getUserBean, String userState);
+	
+	
+	//직원 관리자 추가/삭제
+	public int getUserAddDelete(GetUserBean getUserBean, int authCnt);
+	
+	
+	//팀 추가/수정
+	public int getTeamInsertEdit(GetDeptBean getDeptBean, String teamState);
+	
+	
+	//팀 삭제
+	public int getTeamDelete(GetDeptBean getDeptBean);
 	
 	
 	//날짜로  M/M 조회
@@ -81,5 +101,8 @@ public interface IAdminService {
 	
 	//팀별 입력 현황 완료/미완료
 	public int getCompleteMM(ConfirmorBean confirmorBean);
+	
+	//직원 검색
+	public List<GetUserBean> getUserSearch(SearchBean searchBean);
 	
 }

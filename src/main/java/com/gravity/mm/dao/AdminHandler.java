@@ -62,6 +62,36 @@ public class AdminHandler {
 	public List<GetOtherPeopleBean> getOtherPeople(SearchBean searchBean) {
 		return sqlSession.selectList(NAMESPACE + ".getOtherPeople", searchBean);
 	}
+	
+	
+	//다음월 타인입력 데이터 삭제
+	public int deletePrevPeople(String default_month) {
+		return sqlSession.update(NAMESPACE + ".deletePrevPeople", default_month);
+	}
+	
+	
+	//다음월 타인입력 지정자 데이터 삭제
+	public int deletePrevOtherPeople(String default_month) {
+		return sqlSession.delete(NAMESPACE + ".deletePrevOtherPeople", default_month);
+	}
+	
+	
+	//전월 타인 지정자 & 전월 타인 입력 지정자 데이터 다음월 데이터로 입력
+	public List<GetOtherPeopleBean> searchPrevPeople(AddPrevMonthBean addPrevMonthBean) {
+		return sqlSession.selectList(NAMESPACE + ".searchPrevPeople", addPrevMonthBean);
+	}
+	
+	
+	//전월 타인입력 데이터 다음월 타인입력 데이터로 입력
+	public int addPrevPeople(GetOtherPeopleBean addPrevMonthBean) {
+		return sqlSession.insert(NAMESPACE + ".addPrevPeople", addPrevMonthBean);
+	}
+	
+	
+	//전월 타인입력 지정자 데이터 다음월 타인입력 지정자 데이터로 입력
+	public int addPrevOtherPeople(GetOtherPeopleBean GetOtherPeopleBean) {
+		return sqlSession.insert(NAMESPACE + ".addPrevOtherPeople", GetOtherPeopleBean);
+	}
 		
 	
 	//유저 조회
@@ -154,9 +184,51 @@ public class AdminHandler {
 	}
 	
 	
-	//유저 조회
+	//직원 조회
 	public List<GetUserBean> getUser() {
 		return sqlSession.selectList(NAMESPACE + ".getUser");
+	}
+	
+	
+	//직원 추가
+	public int getUserInsert(GetUserBean getUserBean) {
+		return sqlSession.insert(NAMESPACE + ".getUserInsert", getUserBean);
+	}
+	
+	
+	//직원 수정
+	public int getUserEdit(GetUserBean getUserBean) {
+		return sqlSession.update(NAMESPACE + ".getUserEdit", getUserBean);
+	}
+	
+	
+	//직원 관리자 추가
+	public int getAddAuth(GetUserBean getUserBean) {
+		return sqlSession.insert(NAMESPACE + ".getAddAuth", getUserBean);
+	}
+	
+	
+	//직원 관리자 삭제
+	public int getDeleteAuth(GetUserBean getUserBean) {
+		return sqlSession.delete(NAMESPACE + ".getDeleteAuth", getUserBean);
+	}
+	
+	
+	//팀 추가
+	public int getTeamInsert(GetDeptBean getDeptBean) {
+		return sqlSession.insert(NAMESPACE + ".getTeamInsert", getDeptBean);
+	}
+	
+	
+	//팀 수정
+	public int getTeamEdit(GetDeptBean getDeptBean) {
+		return sqlSession.update(NAMESPACE + ".getTeamEdit", getDeptBean);
+	}
+	
+	
+	//팀 삭제
+	public int getTeamDelete(GetDeptBean getDeptBean) {
+		return sqlSession.update(NAMESPACE + ".getTeamDelete", getDeptBean);
 	}
 	
 	
@@ -181,6 +253,12 @@ public class AdminHandler {
 	//팀별 입력 현황 완료/미완료
 	public int getCompleteMM(ConfirmorBean confirmorBean) {
 		return sqlSession.update(NAMESPACE + ".getCompleteMM", confirmorBean);
+	}
+	
+	
+	//직원 검색
+	public List<GetUserBean> getUserSearch(SearchBean searchBean) {
+		return sqlSession.selectList(NAMESPACE + ".getUserSearch", searchBean);
 	}
 
 }

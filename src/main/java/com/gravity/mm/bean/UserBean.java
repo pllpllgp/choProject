@@ -8,7 +8,25 @@ public class UserBean {
 	private String userMail;
 	private String userNum;
 	private String userDeptName;
+	private String UserDeptAuth;
 	private String UserAuth;
+	private String UserUse;
+	
+	
+	public String getUserDeptAuth() {
+		return UserDeptAuth;
+	}
+	public void setUserDeptAuth(String userDeptAuth) {
+		UserDeptAuth = userDeptAuth;
+	}
+	
+	
+	public String getUserUse() {
+		return UserUse;
+	}
+	public void setUserUse(String userUse) {
+		UserUse = userUse;
+	}
 	
 	
 	public String getUserSEQ() {

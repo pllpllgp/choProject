@@ -5,7 +5,8 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -16,10 +17,8 @@ import org.springframework.web.servlet.View;
 
 import com.gravity.mm.bean.AddPrevMonthBean;
 import com.gravity.mm.bean.DefaultMMBean;
-import com.gravity.mm.bean.GetConfirmorBean;
 import com.gravity.mm.bean.GetDefaultMMBean;
 import com.gravity.mm.bean.GetDeptBean;
-import com.gravity.mm.bean.GetTeamBean;
 import com.gravity.mm.bean.GetUserBean;
 import com.gravity.mm.bean.SearchBean;
 import com.gravity.mm.bean.UserBean;
@@ -32,7 +31,7 @@ import com.gravity.mm.util.ExcelView;
 @RequestMapping("/")
 public class DefaultController {
 	
-	private static Logger LOG = Logger.getLogger(OtherPeopleController.class);
+	private static Logger log = LoggerFactory.getLogger(OtherPeopleController.class);
 	
 	@Autowired IAdminService ias;
 	@Autowired ITeamService its;
@@ -44,7 +43,11 @@ public class DefaultController {
 		System.out.println(">>>>>>>>>>>>>>>>>>> adminMM(defaultMM) Merthod = normal <<<<<<<<<<<<<<<<<<<");
 		System.out.println("userBean > " + userBean.getUserID());
 		
+		log.info(">>>>>>>>>>>>>>>>>>> adminMM(defaultMM) Merthod = normal <<<<<<<<<<<<<<<<<<<");
+		log.info("userBean > " + userBean.getUserID());
+		
 		model.addAttribute("userBean", userBean);
+		model.addAttribute("urlPage", "defaultMM");
 		
 		return "admin/defaultMM";
 
@@ -56,6 +59,7 @@ public class DefaultController {
 	public String defaultMMSearch(HttpServletRequest request, @ModelAttribute("userBean")UserBean userBean, Model model) {
 			
 		System.out.println(">>>>>>>>>>>>>>>>>>> adminMM(defaultMM) Merthod = search <<<<<<<<<<<<<<<<<<<");
+		log.info(">>>>>>>>>>>>>>>>>>> adminMM(defaultMM) Merthod = search <<<<<<<<<<<<<<<<<<<");
 		
 		SearchBean searchBean		= new SearchBean();
 		
@@ -77,6 +81,7 @@ public class DefaultController {
 	public String defaultMMPrevMonth(HttpServletRequest request, @ModelAttribute("userBean")UserBean userBean, @ModelAttribute("searchBean")SearchBean searchBean, Model model) {
 		
 		System.out.println(">>>>>>>>>>>>>>>>>>> adminMM(defaultMM) Merthod = prevMonth <<<<<<<<<<<<<<<<<<<");
+		log.info(">>>>>>>>>>>>>>>>>>> adminMM(defaultMM) Merthod = prevMonth <<<<<<<<<<<<<<<<<<<");
 		
 		String prev_month 			= request.getParameter("prev_month")+"-01";
 		String default_month 		= request.getParameter("default_month")+"-01";
@@ -102,31 +107,20 @@ public class DefaultController {
 	public String defaultMMSave(HttpServletRequest request, @ModelAttribute("userBean")UserBean userBean, @ModelAttribute("searchBean")SearchBean searchBean, Model model) {
 		
 		System.out.println(">>>>>>>>>>>>>>>>>>> adminMM(defaultMM) Merthod = save <<<<<<<<<<<<<<<<<<<");
+		log.info(">>>>>>>>>>>>>>>>>>> adminMM(defaultMM) Merthod = save <<<<<<<<<<<<<<<<<<<");
 		
 		String i_seq_pk 				= request.getParameter("addProjectSeq"); //MM SEQ
-		System.out.println("i_seq_pk : " + i_seq_pk);
 		String d_job_date 				= request.getParameter("addDefaultYear"); //MM작업월
-		System.out.println("d_job_date : " + d_job_date);
 		String v_dept_code				= request.getParameter("addDefaultCode"); //부서 코드
-		System.out.println("v_dept_code : " + v_dept_code);
 		String v_dept_code_name			= request.getParameter("addDefaultERP"); //부서 ERP
-		System.out.println("v_dept_code_name : " + v_dept_code_name);
 		String i_dept_seq				= request.getParameter("addDefaultDept"); //부서 Seq
-		System.out.println("i_dept_seq : " + i_dept_seq);
 		String v_dept_name				= request.getParameter("defaultDeptNameK"); //부서명
-		System.out.println("v_dept_name : " + v_dept_name);
 		String i_user_number			= request.getParameter("addDefaultName"); //사원 Seq
-		System.out.println("i_user_number : " + i_user_number);
 		String d_enter_date				= request.getParameter("addDefaultIn"); //사원 입사일
-		System.out.println("d_enter_date : " + d_enter_date);
 		String d_retirement_date		= request.getParameter("addDefaultOut"); //사원 퇴사일
-		System.out.println("d_retirement_date : " + d_retirement_date);
 		String i_day_count				= request.getParameter("addDefaultDay"); //사원 월 작업일 수
-		System.out.println("i_day_count : " + i_day_count);
 		String d_mm						= request.getParameter("addDefaultMM"); //사원 MM입력 값
-		System.out.println("d_mm : " + d_mm);
 		String defaultState				= request.getParameter("defaultState"); //추가, 수정 분별 값
-		System.out.println("defaultState : " + defaultState);
 		
 		DefaultMMBean defaultMMBean = new DefaultMMBean();
 		
@@ -143,6 +137,7 @@ public class DefaultController {
 		defaultMMBean.setI_day_count(i_day_count);
 		defaultMMBean.setI_reg_user_number(userBean.getUserSEQ());
 		defaultMMBean.setI_update_user_number(userBean.getUserSEQ());
+		model.addAttribute("urlPage", "defaultMM");
 		
 		int Return = ias.getDefaultSave(defaultMMBean, defaultState);
 		
@@ -158,6 +153,7 @@ public class DefaultController {
 	public View excelDown(HttpServletRequest request, @ModelAttribute("userBean")UserBean userBean, @ModelAttribute("searchBean")SearchBean searchBean, Model model) {
 				
 		System.out.println(">>>>>>>>>>>>>>>>>>> defaultMM(defaultMM) Merthod = excelDownload <<<<<<<<<<<<<<<<<<<");
+		log.info(">>>>>>>>>>>>>>>>>>> adminMM(defaultMM) Merthod = excelDownload <<<<<<<<<<<<<<<<<<<");
 			
 		String defaultMMSeq							= request.getParameter("defaultMMSeq");
 		String search_dept_seq						= request.getParameter("search_dept_seq");
@@ -186,12 +182,14 @@ public class DefaultController {
 	public String defaultMMRepeatedSearch(HttpServletRequest request, @ModelAttribute("userBean")UserBean userBean, @ModelAttribute("searchBean")SearchBean searchBean, Model model) {
 									
 		System.out.println(">>>>>>>>>>>>>>>>>>> adminMM(defaultMM) Merthod = defaultMMRepeatedSearch <<<<<<<<<<<<<<<<<<<");
+		log.info(">>>>>>>>>>>>>>>>>>> adminMM(defaultMM) Merthod = defaultMMRepeatedSearch <<<<<<<<<<<<<<<<<<<");
 		
 		List<GetDefaultMMBean> lDefaultMM = ias.getDefaultMM(searchBean);
 		
 		model.addAttribute("lDefaultMM", lDefaultMM);
 		model.addAttribute("userBean", userBean);
 		model.addAttribute("searchBean", searchBean);
+		model.addAttribute("urlPage", "defaultMM");
 		
 		return "Y";
 

@@ -1,32 +1,34 @@
 package com.gravity.mm.action;
 
+
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.servlet.View;
 
 import com.gravity.mm.bean.AddPrevMonthBean;
 import com.gravity.mm.bean.GetConfirmorBean;
-import com.gravity.mm.bean.GetOtherPeopleBean;
-import com.gravity.mm.bean.GetProjectCodeBean;
 import com.gravity.mm.bean.GetUserBean;
 import com.gravity.mm.bean.SearchBean;
 import com.gravity.mm.bean.UserBean;
 import com.gravity.mm.service.IAdminService;
 import com.gravity.mm.util.DateTime;
+import com.gravity.mm.util.ExcelView;
 
 @Controller
 @RequestMapping("/")
 public class ConfirmorController {
 	
-	private static Logger LOG = Logger.getLogger(ConfirmorController.class);
+	private static Logger log = LoggerFactory.getLogger(ConfirmorController.class);
 	
 	@Autowired IAdminService ias;
 	
@@ -37,7 +39,11 @@ public class ConfirmorController {
 		System.out.println(">>>>>>>>>>>>>>>>>>> adminMM(confirmor) Merthod = normal <<<<<<<<<<<<<<<<<<<");
 		System.out.println("userBean > " + userBean.getUserID());
 		
+		log.info(">>>>>>>>>>>>>>>>>>> adminMM(confirmor) Merthod = normal <<<<<<<<<<<<<<<<<<<");
+		log.info("userBean > " + userBean.getUserID());
+		
 		model.addAttribute("userBean", userBean);
+		model.addAttribute("urlPage", "confirmor");
 		
 		return "admin/confirmor";
 
@@ -49,6 +55,7 @@ public class ConfirmorController {
 	public String confirmorSearch(HttpServletRequest request, @ModelAttribute("userBean")UserBean userBean, Model model) {
 		
 		System.out.println(">>>>>>>>>>>>>>>>>>> adminMM(confirmor) Merthod = search <<<<<<<<<<<<<<<<<<<");
+		log.info(">>>>>>>>>>>>>>>>>>> adminMM(confirmor) Merthod = search <<<<<<<<<<<<<<<<<<<");
 		
 		SearchBean searchBean = new SearchBean();
 		
@@ -64,6 +71,7 @@ public class ConfirmorController {
 	public String confirmorPrevMonth(HttpServletRequest request, @ModelAttribute("userBean")UserBean userBean, @ModelAttribute("searchBean")SearchBean searchBean, Model model) {
 		
 		System.out.println(">>>>>>>>>>>>>>>>>>> adminMM(confirmor) Merthod = prevMonth <<<<<<<<<<<<<<<<<<<");
+		log.info(">>>>>>>>>>>>>>>>>>> adminMM(confirmor) Merthod = prevMonth <<<<<<<<<<<<<<<<<<<");
 		
 		String prev_month 			= request.getParameter("prev_month")+"-01";
 		String default_month 		= request.getParameter("default_month")+"-01";
@@ -87,6 +95,7 @@ public class ConfirmorController {
 	public String confirmorSave(HttpServletRequest request, @ModelAttribute("userBean")UserBean userBean, @ModelAttribute("searchBean")SearchBean searchBean, Model model) {
 		
 		System.out.println(">>>>>>>>>>>>>>>>>>> adminMM(confirmor) Merthod = save <<<<<<<<<<<<<<<<<<<");
+		log.info(">>>>>>>>>>>>>>>>>>> adminMM(confirmor) Merthod = save <<<<<<<<<<<<<<<<<<<");
 		
 		String confirmorState 						= request.getParameter("confirmorState");
 		String addConfirmorDate 					= request.getParameter("addConfirmorDate");
@@ -111,6 +120,7 @@ public class ConfirmorController {
 	public String confirmorDelete(HttpServletRequest request, @ModelAttribute("userBean")UserBean userBean, @ModelAttribute("searchBean")SearchBean searchBean, Model model) {
 		
 		System.out.println(">>>>>>>>>>>>>>>>>>> adminMM(confirmor) Merthod = delete <<<<<<<<<<<<<<<<<<<");
+		log.info(">>>>>>>>>>>>>>>>>>> adminMM(confirmor) Merthod = delete <<<<<<<<<<<<<<<<<<<");
 		
 		String confirmotSeq 							= request.getParameter("arrConfirmorSeq");
 		
@@ -129,10 +139,36 @@ public class ConfirmorController {
 	}
 	
 	
+	//해당 목록 Excel 다운로드
+	@RequestMapping(value = "confirmor", params = "methodType=excel", method = RequestMethod.POST)
+	public View excelDown(HttpServletRequest request, @ModelAttribute("userBean")UserBean userBean, @ModelAttribute("searchBean")SearchBean searchBean, Model model) {
+				
+		System.out.println(">>>>>>>>>>>>>>>>>>> adminMM(confirmor) Merthod = excelDownload <<<<<<<<<<<<<<<<<<<");
+		log.info(">>>>>>>>>>>>>>>>>>> adminMM(confirmor) Merthod = excelDownload <<<<<<<<<<<<<<<<<<<");
+			
+		String search_date 							= request.getParameter("search_date");
+		String confirmorSeq 						= request.getParameter("confirmorSeq");
+		
+		searchBean.setSearch_date(search_date);
+		
+		List<GetConfirmorBean> lConfirmor 		= ias.getConfirmor(searchBean);
+		
+		model.addAttribute("userBean", userBean);
+		model.addAttribute("searchBean", searchBean);
+		model.addAttribute("confirmorSeq", confirmorSeq);
+		model.addAttribute("lConfirmor", lConfirmor);
+		model.addAttribute("excelType", "confirmorExcel");
+		
+		return new ExcelView();
+
+	}
+	
+	
 	//세팅값으로 확인자 조회(반복 사용)
 	public String confirmorRepeatedSearch(HttpServletRequest request, @ModelAttribute("userBean")UserBean userBean, @ModelAttribute("searchBean")SearchBean searchBean, Model model) {
 									
 		System.out.println(">>>>>>>>>>>>>>>>>>> adminMM(confirmor) Merthod = confirmorRepeatedSearch <<<<<<<<<<<<<<<<<<<");
+		log.info(">>>>>>>>>>>>>>>>>>> adminMM(confirmor) Merthod = confirmorRepeatedSearch <<<<<<<<<<<<<<<<<<<");
 		
 		
 		String search_date 							= request.getParameter("search_date");
@@ -143,8 +179,10 @@ public class ConfirmorController {
 			List<GetConfirmorBean> lConfirmor 		= ias.getConfirmor(searchBean);
 			model.addAttribute("lConfirmor", lConfirmor);
 		}
+		
 		model.addAttribute("userBean", userBean);
 		model.addAttribute("searchBean", searchBean);
+		model.addAttribute("urlPage", "confirmor");
 		
 		return "Y";
 	}

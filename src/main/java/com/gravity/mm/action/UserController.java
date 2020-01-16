@@ -1,26 +1,20 @@
 package com.gravity.mm.action;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.ServletRequestUtils;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.gravity.mm.bean.GetDefaultMMBean;
 import com.gravity.mm.bean.GetProjectCodeBean;
-import com.gravity.mm.bean.GetTeamBean;
 import com.gravity.mm.bean.GetUserBean;
 import com.gravity.mm.bean.SearchBean;
 import com.gravity.mm.bean.UserBean;
@@ -28,13 +22,12 @@ import com.gravity.mm.bean.UserMMBean;
 import com.gravity.mm.service.IUserService;
 import com.gravity.mm.util.DateTime;
 
-import sun.rmi.runtime.Log;
 
 @Controller
 @RequestMapping("/")
 public class UserController {
 	
-	private static Logger LOG = Logger.getLogger(UserController.class);
+	private static Logger log = LoggerFactory.getLogger(UserController.class);
 	
 	@Autowired IUserService ius;
 	
@@ -43,11 +36,14 @@ public class UserController {
 	@RequestMapping(value = "userMM", params = "methodType=normal", method = RequestMethod.POST)
 	public String user(HttpServletRequest request, @ModelAttribute("userBean")UserBean userBean, Model model) {
 		
-		LOG.debug(">>>>>>>>>>>>>>>>>>> UserMM Merthod = normal <<<<<<<<<<<<<<<<<<<");
-		
+		System.out.println(">>>>>>>>>>>>>>>>>>> UserMM Merthod = normal <<<<<<<<<<<<<<<<<<<");		
 		System.out.println("userBean > " + userBean.getUserID());
 		
+		log.info(">>>>>>>>>>>>>>>>>>> UserMM Merthod = normal <<<<<<<<<<<<<<<<<<<");
+		log.info("userBean > " + userBean.getUserID());
+		
 		model.addAttribute("userBean", userBean);
+		model.addAttribute("urlPage", "userMM");
 		
 		return "user/userMM";
 		
@@ -60,6 +56,7 @@ public class UserController {
 	public String dateChoice(HttpServletRequest request, @ModelAttribute("userBean")UserBean userBean, Model model) {
 		
 		System.out.println(">>>>>>>>>>>>>>>>>>> UserMM Merthod = dateSearch <<<<<<<<<<<<<<<<<<<");
+		log.info(">>>>>>>>>>>>>>>>>>> UserMM Merthod = dateSearch <<<<<<<<<<<<<<<<<<<");
 		
 		GetUserBean getUserBean 	= new GetUserBean();
 		SearchBean searchBean		= new SearchBean();
@@ -78,6 +75,7 @@ public class UserController {
 		model.addAttribute("lPeople", lPeople);
 		model.addAttribute("userBean", userBean);
 		model.addAttribute("searchBean", searchBean);
+		model.addAttribute("urlPage", "userMM");
 		
 		return "user/userMM";
 
@@ -89,9 +87,10 @@ public class UserController {
 	public String MMSearch(HttpServletRequest request, @ModelAttribute("userBean")UserBean userBean, @ModelAttribute("searchBean")SearchBean searchBean, Model model) {
 			
 		System.out.println(">>>>>>>>>>>>>>>>>>> UserMM Merthod = search <<<<<<<<<<<<<<<<<<<");
+		log.info(">>>>>>>>>>>>>>>>>>> UserMM Merthod = search <<<<<<<<<<<<<<<<<<<");
 		
 		//유저 M/M 조회
-		String result = userRepeatedSearch(request, userBean, searchBean, model);
+		userRepeatedSearch(request, userBean, searchBean, model);
 			
 		return "user/userMM";
 
@@ -103,6 +102,7 @@ public class UserController {
 	public String MMWrite(HttpServletRequest request, @ModelAttribute("userBean")UserBean userBean, Model model) {
 				
 		System.out.println(">>>>>>>>>>>>>>>>>>> UserMM Merthod = write <<<<<<<<<<<<<<<<<<<");
+		log.info(">>>>>>>>>>>>>>>>>>> UserMM Merthod = write <<<<<<<<<<<<<<<<<<<");
 			
 		SearchBean searchBean			= new SearchBean();
 		String search_date 				= request.getParameter("search_date");
@@ -132,6 +132,7 @@ public class UserController {
 	public String MMSave(HttpServletRequest request, @ModelAttribute("userBean")UserBean userBean, @ModelAttribute("searchBean")SearchBean searchBean, Model model) {
 					
 		System.out.println(">>>>>>>>>>>>>>>>>>> UserMM Merthod = save <<<<<<<<<<<<<<<<<<<");
+		log.info(">>>>>>>>>>>>>>>>>>> UserMM Merthod = save <<<<<<<<<<<<<<<<<<<");
 			
 		String i_default_mm				= request.getParameter("i_mm_seq_pk");
 		String project_SEQ 				= request.getParameter("project_SEQ");
@@ -141,7 +142,7 @@ public class UserController {
 		String[] projectMM				= project_MM.split(",");
 		
 		//데이터 전부 삭제 후 새로 저장
-		int iResult = ius.getDeleteUserMM(i_default_mm);
+		ius.getDeleteUserMM(i_default_mm);
 			
 		for(int i=0; projectMM.length > i; i++) {
 			UserMMBean userMMBeans	= new UserMMBean();
@@ -151,12 +152,13 @@ public class UserController {
 			userMMBeans.setD_mm_user(projectMM[i]);
 			
 			System.out.println("projectSEQ[i] : " + projectSEQ[i]);
+			log.info("projectSEQ[i] : " + projectSEQ[i]);
 			
-			int uResult = ius.getAddUserMM(userMMBeans);
+			ius.getAddUserMM(userMMBeans);
 		}
 		
 		//유저 M/M 조회
-		String result = userRepeatedSearch(request, userBean, searchBean, model);
+		userRepeatedSearch(request, userBean, searchBean, model);
 			
 		return "user/userMM";
 
@@ -168,13 +170,14 @@ public class UserController {
 	public String MMcomplete(HttpServletRequest request, @ModelAttribute("userBean")UserBean userBean, @ModelAttribute("searchBean")SearchBean searchBean, Model model) {
 					
 		System.out.println(">>>>>>>>>>>>>>>>>>> UserMM Merthod = complete <<<<<<<<<<<<<<<<<<<");
+		log.info(">>>>>>>>>>>>>>>>>>> UserMM Merthod = complete <<<<<<<<<<<<<<<<<<<");
 		
 		String i_default_mm				= request.getParameter("i_mm_seq_pk");
 		
-		int iResult = ius.getCompleteUserMM(i_default_mm);
+		ius.getCompleteUserMM(i_default_mm);
 		
 		//유저 M/M 조회
-		String result = userRepeatedSearch(request, userBean, searchBean, model);
+		userRepeatedSearch(request, userBean, searchBean, model);
 		
 		return "user/userMM";
 
@@ -185,6 +188,7 @@ public class UserController {
 	public String userRepeatedSearch(HttpServletRequest request, @ModelAttribute("userBean")UserBean userBean, @ModelAttribute("searchBean")SearchBean searchBean, Model model) {
 									
 		System.out.println(">>>>>>>>>>>>>>>>>>> UserMM Merthod = userRepeatedSearch <<<<<<<<<<<<<<<<<<<");
+		log.info(">>>>>>>>>>>>>>>>>>> UserMM Merthod = userRepeatedSearch <<<<<<<<<<<<<<<<<<<");
 						
 		GetUserBean getUserBean 		= new GetUserBean();
 		SearchBean getSearchBean		= new SearchBean();
@@ -211,6 +215,7 @@ public class UserController {
 		if(lUserDefaultMM.size() != 0) {
 			
 			System.out.println("lUserDefaultMM.get(0).getV_disable() = " + lUserDefaultMM.get(0).getV_disable());
+			log.info("lUserDefaultMM.get(0).getV_disable() = " + lUserDefaultMM.get(0).getV_disable());
 			
 			if(lUserDefaultMM.get(0).getV_disable().equals("Y")) {
 				btn_flag = false;
@@ -226,6 +231,7 @@ public class UserController {
 		model.addAttribute("lProjectCode", lProjectCode);
 		model.addAttribute("lUserDefaultMM", lUserDefaultMM);
 		model.addAttribute("btn_flag", btn_flag);
+		model.addAttribute("urlPage", "userMM");
 			
 		return "Y";
 

@@ -4,7 +4,8 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -19,7 +20,6 @@ import com.gravity.mm.bean.GetTeamBean;
 import com.gravity.mm.bean.GetUserBean;
 import com.gravity.mm.bean.SearchBean;
 import com.gravity.mm.bean.UserBean;
-import com.gravity.mm.bean.UserMMBean;
 import com.gravity.mm.service.ITeamService;
 import com.gravity.mm.service.IUserService;
 import com.gravity.mm.util.DateTime;
@@ -29,7 +29,7 @@ import com.gravity.mm.util.ExcelView;
 @RequestMapping("/")
 public class TeamController {
 	
-	private static Logger LOG = Logger.getLogger(TeamController.class);
+	private static Logger log = LoggerFactory.getLogger(TeamController.class);
 	
 	@Autowired ITeamService its;
 	@Autowired IUserService ius;
@@ -39,10 +39,13 @@ public class TeamController {
 	public String team(HttpServletRequest request, @ModelAttribute("userBean")UserBean userBean, Model model) {
 		
 		System.out.println(">>>>>>>>>>>>>>>>>>> TeamMM Merthod = normal <<<<<<<<<<<<<<<<<<<");
-		
 		System.out.println("userBean > " + userBean.getUserID());
 		
+		log.info(">>>>>>>>>>>>>>>>>>> TeamMM Merthod = normal <<<<<<<<<<<<<<<<<<<");
+		log.info("userBean > " + userBean.getUserID());
+		
 		model.addAttribute("userBean", userBean);
+		model.addAttribute("urlPage", "teamMM");
 		
 		return "team/teamMM";
 
@@ -54,6 +57,7 @@ public class TeamController {
 	public String dateChoice(HttpServletRequest request, @ModelAttribute("userBean")UserBean userBean, Model model) {
 			
 		System.out.println(">>>>>>>>>>>>>>>>>>> TeamMM Merthod = dateSearch <<<<<<<<<<<<<<<<<<<");
+		log.info(">>>>>>>>>>>>>>>>>>> TeamMM Merthod = dateSearch <<<<<<<<<<<<<<<<<<<");
 		
 		SearchBean searchBean		= new SearchBean();
 			
@@ -67,6 +71,7 @@ public class TeamController {
 		model.addAttribute("lTeam", lTeam);
 		model.addAttribute("userBean", userBean);
 		model.addAttribute("searchBean", searchBean);
+		model.addAttribute("urlPage", "teamMM");
 			
 		return "team/teamMM";
 
@@ -78,6 +83,7 @@ public class TeamController {
 	public String MMSearch(HttpServletRequest request, @ModelAttribute("userBean")UserBean userBean, @ModelAttribute("searchBean")SearchBean searchBean, Model model) {
 				
 		System.out.println(">>>>>>>>>>>>>>>>>>> TeamMM Merthod = search <<<<<<<<<<<<<<<<<<<");
+		log.info(">>>>>>>>>>>>>>>>>>> TeamMM Merthod = search <<<<<<<<<<<<<<<<<<<");
 
 		//ÆÀ M/M Á¶È¸
 		String result = teamRepeatedSearch(request, userBean, searchBean, model);	
@@ -92,6 +98,7 @@ public class TeamController {
 	public String MMSave(HttpServletRequest request, @ModelAttribute("userBean")UserBean userBean, @ModelAttribute("searchBean")SearchBean searchBean, Model model) {
 						
 		System.out.println(">>>>>>>>>>>>>>>>>>> TeamMM Merthod = complete <<<<<<<<<<<<<<<<<<<");
+		log.info(">>>>>>>>>>>>>>>>>>> TeamMM Merthod = complete <<<<<<<<<<<<<<<<<<<");
 		
 		String i_mm_seq_pk 			= request.getParameter("i_mm_seq_pk");
 		String complete_check 		= request.getParameter("complete_check");
@@ -119,6 +126,7 @@ public class TeamController {
 	public String MMComplete(HttpServletRequest request, @ModelAttribute("userBean")UserBean userBean, @ModelAttribute("searchBean")SearchBean searchBean, Model model) {
 							
 		System.out.println(">>>>>>>>>>>>>>>>>>> TeamMM Merthod = teamComplete <<<<<<<<<<<<<<<<<<<");
+		log.info(">>>>>>>>>>>>>>>>>>> TeamMM Merthod = teamComplete <<<<<<<<<<<<<<<<<<<");
 		
 		String i_mm_seq_pk 			= request.getParameter("i_mm_seq_pk");
 
@@ -141,6 +149,7 @@ public class TeamController {
 	public View excelDown(HttpServletRequest request, @ModelAttribute("userBean")UserBean userBean, @ModelAttribute("searchBean")SearchBean searchBean, Model model) {
 				
 		System.out.println(">>>>>>>>>>>>>>>>>>> TeamMM Merthod = excelDownload <<<<<<<<<<<<<<<<<<<");
+		log.info(">>>>>>>>>>>>>>>>>>> TeamMM Merthod = excelDownload <<<<<<<<<<<<<<<<<<<");
 			
 		String search_Team_user_MM_seq			= request.getParameter("teamUserMMSEQ");
 		String search_user_seq					= "";
@@ -178,6 +187,7 @@ public class TeamController {
 	public String teamRepeatedSearch(HttpServletRequest request, @ModelAttribute("userBean")UserBean userBean, @ModelAttribute("searchBean")SearchBean searchBean, Model model) {
 								
 		System.out.println(">>>>>>>>>>>>>>>>>>> TeamMM Merthod = teamRepeatedSearch <<<<<<<<<<<<<<<<<<<");
+		log.info(">>>>>>>>>>>>>>>>>>> TeamMM Merthod = teamRepeatedSearch <<<<<<<<<<<<<<<<<<<");
 					
 		String btn_flag = "1";
 					
@@ -218,6 +228,7 @@ public class TeamController {
 		model.addAttribute("lUserDefaultMM", lUserDefaultMM);
 		model.addAttribute("lUserProjectGroup", lUserProjectGroup);
 		model.addAttribute("btn_flag", btn_flag);
+		model.addAttribute("urlPage", "teamMM");
 						
 		return "Y";
 

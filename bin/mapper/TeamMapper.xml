@@ -16,12 +16,15 @@
 				SELECT COUNT(*)
 				FROM TBM_CONFIRMOR
 				WHERE DATE_FORMAT(d_job_date, '%Y-%m') = #{search_date}
+				<!-- WHERE CONVERT(VARCHAR(7), d_job_date, 120) = #{search_date} -->
 					AND i_user_number = p.i_user_number
 			)>0
 		JOIN TBM_DEFAULT_MM dm 
 			ON p.i_user_number = dm.i_user_number
 		WHERE DATE_FORMAT(c.d_job_date, '%Y-%m') = #{search_date}
 			AND DATE_FORMAT(dm.d_indate, '%Y-%m') = #{search_date} 
+		<!-- WHERE CONVERT(VARCHAR(7), c.d_job_date, 120) = #{search_date}
+			AND CONVERT(VARCHAR(7), dm.d_indate, 120) = #{search_date} -->
 			AND c.i_user_number = #{search_user_seq}
 			AND dm.i_dept_seq is not null
 			AND dm.v_apply = 'Y'
@@ -35,6 +38,7 @@
 			ON c.i_user_number = dm.i_user_number
 		WHERE c.i_user_number = #{search_user_seq}
 			AND DATE_FORMAT(c.d_job_date, '%Y-%m') = #{search_date}
+			<!-- AND CONVERT(VARCHAR(7), c.d_job_date, 120) = #{search_date} -->
 			AND c.v_admin_flag = 'Y'
 			AND dm.i_dept_seq is not null
 			AND dm.v_apply = 'Y'
@@ -47,6 +51,7 @@
 			,P.v_project_code
 			,P.v_project_name
 			,DATE_FORMAT(dm.d_job_date, '%Y-%m') AS d_job_date
+			<!-- , CONVERT(VARCHAR(7), dm.d_job_date, 120) AS d_job_date -->
 			,dm.v_apply
 			<if test="search_dept_seq != null and search_dept_seq != ''">
 				,dm.v_dept_code
@@ -57,9 +62,9 @@
 		FROM TBM_DEFAULT_MM dm
 		JOIN TBG_USER u 
 			ON dm.i_user_number = u.i_seq_pk
-		LEFT JOIN TBM_MM m 
+		JOIN TBM_MM m 
 			ON dm.i_seq_pk = m.i_default_mm_pk
-		LEFT JOIN TBM_PROJECT_CODE p 
+		JOIN TBM_PROJECT_CODE p 
 			ON m.i_project_code_pk = p.i_seq_pk 
 			AND p.v_apply='Y'	
 		GROUP BY p.v_project_code,v_project_name,dm.d_job_date,dm.v_apply
@@ -75,6 +80,7 @@
 		HAVING dm.v_apply = 'Y'
 		<if test="search_date != null and search_date != ''"> 
 		   AND DATE_FORMAT(dm.d_job_date, '%Y-%m') = #{search_date}
+		   <!-- AND CONVERT(VARCHAR(7), dm.d_job_date, 120) = #{search_date} -->
 		</if>
 		<if test="search_dept_seq != null and search_dept_seq != ''"> 
 			AND v_dept_code = (
@@ -86,7 +92,14 @@
 						AND DATE_FORMAT(d_job_date, '%Y-%m') = #{search_date}
 					</if>
 				LIMIT 1
-				)	   
+				<!-- SELECT TOP 1 v_dept_code
+				FROM TBM_DEFAULT_MM 
+				WHERE i_dept_seq = #{search_dept_seq}
+					AND v_apply = 'Y'
+					<if test="search_date != null and search_date != ''"> 
+						AND CONVERT(VARCHAR(7), d_job_date, 120) = #{search_date}
+					</if> -->
+				)   
 		</if>
 		<if test="search_user_seq != null and search_user_seq != ''"> 
 			AND dm.i_user_number = #{search_user_seq}
@@ -103,6 +116,7 @@
 		UPDATE TBM_DEFAULT_MM SET
 				v_complete = 'Y'
 				,d_update = now()
+				<!-- ,d_update = GETDATE() -->
 		WHERE i_seq_pk = #{i_default_mm}	
 	</update>
 	

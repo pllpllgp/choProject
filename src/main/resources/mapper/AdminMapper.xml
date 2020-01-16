@@ -7,7 +7,8 @@
 	<!-- 다음월 프로젝트 데이터 삭제 -->
 	<delete id="deleteProjectCode" parameterType="String">
 		DELETE FROM TBM_PROJECT_CODE
- 		WHERE DATE_FORMAT(d_job_date, '%Y-%m-%d') = #{default_month}		 
+ 		<!-- WHERE DATE_FORMAT(d_job_date, '%Y-%m-%d') = #{default_month} -->
+ 		WHERE CONVERT(VARCHAR(7), d_job_date, 120) = SUBSTRING(#{default_month}, 1, 7)
 	</delete>
 	
 	
@@ -23,16 +24,20 @@
            ,d_indate
            ,d_update)
 		SELECT 
-			  v_op_type
-			  ,STR_TO_DATE(#{default_month}, '%Y-%m-%d %H:%i:%s')
-			  ,v_disable
-			  ,v_project_code
-			  ,v_project_name
-			  ,v_apply	           
-			  ,now()
-			  ,now()
+			v_op_type
+			<!-- ,STR_TO_DATE(#{default_month}, '%Y-%m-%d %H:%i:%s') -->
+			,CONVERT(DATETIME,#{default_month})
+			,v_disable
+			,v_project_code
+			,v_project_name
+			,v_apply	           
+			<!-- ,now()
+			,now() -->
+			,GETDATE()
+			,GETDATE()
 		FROM TBM_PROJECT_CODE
- 		WHERE DATE_FORMAT(d_job_date, '%Y-%m-%d') = #{prev_month}		 
+ 		<!-- WHERE DATE_FORMAT(d_job_date, '%Y-%m-%d') = #{prev_month} -->	
+ 		WHERE CONVERT(VARCHAR(7), d_job_date, 120) = CONVERT(VARCHAR(7), #{prev_month}, 120)
 	</insert>
 	
 	
@@ -60,20 +65,24 @@
 			,d_update)
 		VALUES
 			('AM001'
-			,STR_TO_DATE(#{d_job_date}, '%Y-%m-%d 00:00:00')
+			<!-- ,STR_TO_DATE(#{d_job_date}, '%Y-%m-%d 00:00:00') -->
+			,CONVERT(DATETIME,replace(#{d_job_date},'-','')+'01')
 			,#{v_disable}
 			,#{v_project_code}
 			,#{v_project_name}
 			,'Y'	           
-			,now()
-			,now())
+			<!-- ,now()
+			,now()) -->
+			,GETDATE()
+			,GETDATE())
 	</insert>
 	
 	
 	<!-- 프로젝트 수정 -->
 	<update id="getProjectEdit" parameterType="GetProjectCodeBean">
 		UPDATE TBM_PROJECT_CODE 
-		SET d_update = now()
+		<!-- SET d_update = now() -->
+		SET d_update = GETDATE()
 			,v_disable = #{v_disable}
 			,v_project_code = #{v_project_code}
 			,v_project_name = #{v_project_name}
@@ -85,7 +94,8 @@
 	<select id="getOtherPeople" parameterType="SearchBean" resultType="GetOtherPeopleBean">
 		SELECT o.i_seq_pk
 			,o.v_op_type
-			,DATE_FORMAT(d_job_date, '%Y-%m') as d_job_date
+			<!-- ,DATE_FORMAT(d_job_date, '%Y-%m') as d_job_date -->
+			,CONVERT(VARCHAR(7), d_job_date, 120) AS d_job_date
 			,o.i_user_number
 			,o.v_apply
 			,o.d_indate
@@ -102,7 +112,8 @@
 		JOIN TBM_OTHER_PEOPLE_SUB os ON o.i_seq_pk = os.i_other_people_pk
 		JOIN TBG_USER u ON o.i_user_number = u.i_seq_pk 
 		JOIN TBG_USER us ON os.i_to_user_number = us.i_seq_pk
-		WHERE DATE_FORMAT(d_job_date, '%Y-%m') = #{search_date}
+		<!-- WHERE DATE_FORMAT(d_job_date, '%Y-%m') = #{search_date} -->
+		WHERE CONVERT(VARCHAR(7), d_job_date, 120) = #{search_date}
 			AND o.v_apply = 'Y'
 	</select>
 	
@@ -113,11 +124,13 @@
 			,u.v_man_seq as userNum
 			,CASE WHEN u.v_useok = 'Y' 
 				THEN u.v_user_name_k 
-				ELSE CONCAT(u.v_user_name_k,'/퇴사')
+				<!-- ELSE CONCAT(u.v_user_name_k,'/퇴사') -->
+				ELSE u.v_user_name_k + '/퇴사'
 				END userName
 			,CASE WHEN (SELECT count(*)
 					FROM TBM_CONFIRMOR cm
-					WHERE DATE_FORMAT(cm.d_job_date, '%Y-%m') = #{lMonth}
+					<!-- WHERE DATE_FORMAT(cm.d_job_date, '%Y-%m') = #{lMonth} -->
+					WHERE CONVERT(VARCHAR(7), d_job_date, 120) = SUBSTRING(#{sMonth}, 1, 7)
 						AND u.i_seq_pk = cm.i_user_number
 						AND cm .v_apply = 'Y') != 0 
 				THEN '*'
@@ -125,13 +138,90 @@
 				END v_confirmor
 			,(SELECT dm.v_dept_name 
 				FROM TBM_DEFAULT_MM dm 
-				WHERE DATE_FORMAT(dm.d_job_date, '%Y-%m') = #{lMonth}
+				<!-- WHERE DATE_FORMAT(dm.d_job_date, '%Y-%m') = #{lMonth} -->
+				WHERE CONVERT(VARCHAR(7), dm.d_job_date, 120) = SUBSTRING(#{sMonth}, 1, 7)
 					AND u.i_seq_pk = dm.i_user_number
 					AND dm.v_apply = 'Y') as userDeptName
 		FROM TBG_USER u
 		WHERE u.v_man_seq is not null
 		ORDER BY u.v_user_name_k
 	</select>
+	
+	
+	<!-- 다음월 타인입력 데이터 삭제 -->
+	<delete id="deletePrevPeople" parameterType="String">
+ 		UPDATE TBM_OTHER_PEOPLE 
+ 		SET v_apply = 'N'
+ 		<!-- WHERE DATE_FORMAT(d_job_date, '%Y-%m-%d') = #{default_month} -->
+ 		WHERE CONVERT(VARCHAR(7), d_job_date, 120) = SUBSTRING(#{default_month}, 1, 7)
+	</delete>
+	
+	
+	<!-- 전월 타인입력 지정자 데이터 다음월 타인입력 지정자 데이터로 입력전 삭제 -->
+	<delete id="deletePrevOtherPeople" parameterType="String">
+		DELETE FROM TBM_OTHER_PEOPLE_SUB
+		WHERE i_other_people_pk in (
+			SELECT i_seq_pk
+			FROM TBM_OTHER_PEOPLE
+			<!-- WHERE DATE_FORMAT(d_job_date, '%Y-%m-%d') = #{default_month} -->
+			WHERE CONVERT(VARCHAR(7), d_job_date, 120) = CONVERT(VARCHAR(7), #{default_month}, 120)
+		)
+	</delete>
+	
+	
+	<!-- 전월 타인 지정자 & 전월 타인 입력 지정자 데이터 다음월 데이터로 입력 -->
+	<select id="searchPrevPeople" parameterType="AddPrevMonthBean" resultType="GetOtherPeopleBean">
+		SELECT
+			v_op_type
+			<!-- ,STR_TO_DATE(#{d_job_date}, '%Y-%m-%d %H:%i:%s') -->
+			,CONVERT(DATETIME,#{default_month})
+			,i_user_number
+			,v_apply	           
+			<!-- ,now()
+			,now() -->
+			,GETDATE()
+			,GETDATE()
+			,i_other_people_pk
+			,i_to_user_number
+		FROM TBM_OTHER_PEOPLE a, TBM_OTHER_PEOPLE_SUB b
+ 		<!-- WHERE DATE_FORMAT(d_job_date, '%Y-%m-%d') = #{prev_month} -->	
+ 		WHERE CONVERT(VARCHAR(7), d_job_date, 120) = CONVERT(VARCHAR(7), #{prev_month}, 120)
+ 			AND a.i_seq_pk = b.i_other_people_pk
+ 			AND v_apply = 'Y'
+	</select>
+	
+	
+	<!-- 전월 타인입력 데이터 다음월 타인입력 데이터로 입력 -->
+	<insert id="addPrevPeople" parameterType="GetOtherPeopleBean" useGeneratedKeys="true" keyProperty="i_seq_pk" keyColumn="i_seq_pk">
+		INSERT INTO TBM_OTHER_PEOPLE
+           (v_op_type
+			,d_job_date
+			,i_user_number
+			,v_apply
+			,d_indate
+			,d_update)
+		VALUES 
+			(#{v_op_type}
+			<!-- ,STR_TO_DATE(#{d_job_date}, '%Y-%m-%d %H:%i:%s') -->
+			,CONVERT(DATETIME,#{d_job_date})
+			,#{i_user_number}
+			,'Y'
+			<!-- ,now()
+			,now() -->
+			,GETDATE()
+			,GETDATE())
+	</insert>
+	
+	
+	<!-- 전월 타인입력 지정자 데이터 다음월 타인입력 지정자 데이터로 입력 -->
+	<insert id="addPrevOtherPeople" parameterType="GetOtherPeopleBean">
+		INSERT INTO TBM_OTHER_PEOPLE_SUB
+			(i_other_people_pk
+	        ,i_to_user_number)
+		VALUES 
+			(#{i_seq_pk}
+			,#{i_to_user_number})
+	</insert>
 	
 	
 	<!-- 타인 입력 저장 -->
@@ -145,11 +235,14 @@
 			,d_update)
 		VALUES
 			('AM001'
-			,STR_TO_DATE(#{d_job_date}, '%Y-%m-%d %H:%i:%s')
+			<!-- ,STR_TO_DATE(#{d_job_date}, '%Y-%m-%d %H:%i:%s') -->
+			,CONVERT(DATETIME,replace(#{d_job_date},'-','')+'01')
 			,#{i_user_number}
 			,'Y'
-			,now()
-			,now())
+			<!-- ,now()
+			,now()) -->
+			,GETDATE()
+			,GETDATE())
 	</insert>
 	
 	
@@ -168,7 +261,8 @@
 	<update id="getPeopleEdit" parameterType="GetOtherPeopleBean">
 		UPDATE TBM_OTHER_PEOPLE
 		SET i_user_number = #{i_user_number}
-			,d_update = now() 
+			<!-- ,d_update = now() -->
+			,d_update = GETDATE() 
 		WHERE i_seq_pk = #{i_seq_pk}
 	</update>
 	
@@ -196,7 +290,8 @@
 	<select id="getConfirmor" parameterType="SearchBean" resultType="GetConfirmorBean">
 		SELECT cm.i_seq_pk
 			,cm.v_op_type
-			,DATE_FORMAT(dm.d_job_date, '%Y-%m') AS d_job_date
+			<!-- ,DATE_FORMAT(dm.d_job_date, '%Y-%m') AS d_job_date -->
+			,CONVERT(VARCHAR(7), dm.d_job_date, 120) AS d_job_date
 			,cm.i_user_number
 			,cm.v_apply
 			,cm.d_indate
@@ -212,8 +307,10 @@
 		FROM TBM_CONFIRMOR cm
 		JOIN TBG_USER u ON cm.i_user_number = u.i_seq_pk
 		LEFT JOIN TBM_DEFAULT_MM dm on cm.i_user_number = dm.i_user_number
-			AND DATE_FORMAT(cm.d_job_date, '%Y-%m') = DATE_FORMAT(dm.d_job_date, '%Y-%m')
-		WHERE DATE_FORMAT(cm.d_job_date, '%Y-%m') = #{search_date}
+			<!-- AND DATE_FORMAT(cm.d_job_date, '%Y-%m') = DATE_FORMAT(dm.d_job_date, '%Y-%m') -->
+			AND CONVERT(VARCHAR(7), cm.d_job_date, 120) = CONVERT(VARCHAR(7), dm.d_job_date, 120)
+		<!-- WHERE DATE_FORMAT(cm.d_job_date, '%Y-%m') = #{search_date} -->
+		WHERE CONVERT(VARCHAR(7), cm.d_job_date, 120) = #{search_date}
 			AND cm.v_apply = 'Y'
 		ORDER BY u.v_user_name_k
 	</select>
@@ -222,7 +319,8 @@
 	<!-- 다음월 확인자 데이터 삭제 -->
 	<delete id="deleteConfirmor" parameterType="String">
 		DELETE FROM TBM_CONFIRMOR
- 		WHERE DATE_FORMAT(d_job_date, '%Y-%m-%d') = #{default_month}		 
+ 		<!-- WHERE DATE_FORMAT(d_job_date, '%Y-%m-%d') = #{default_month} -->
+ 		WHERE CONVERT(VARCHAR(7), d_job_date, 120) = SUBSTRING(#{default_month}, 1, 7)
 	</delete>
 	
 	
@@ -237,15 +335,19 @@
 			,d_indate
 			,d_update)
 		SELECT 
-			  v_op_type
-			  ,STR_TO_DATE(#{default_month}, '%Y-%m-%d %H:%i:%s')
-			  ,i_user_number
-			  ,v_apply
-			  ,v_admin_flag       
-			  ,now()
-			  ,now()
+			v_op_type
+			<!-- ,STR_TO_DATE(#{default_month}, '%Y-%m-%d %H:%i:%s') -->
+			,CONVERT(DATETIME,#{default_month})
+			,i_user_number
+			,v_apply
+			,v_admin_flag       
+			<!-- ,now()
+			,now() -->
+			,GETDATE()
+			,GETDATE()
 		FROM TBM_CONFIRMOR
- 		WHERE DATE_FORMAT(d_job_date, '%Y-%m-%d') = #{prev_month}	
+ 		<!-- WHERE DATE_FORMAT(d_job_date, '%Y-%m-%d') = #{prev_month} -->
+ 		WHERE CONVERT(VARCHAR(7), d_job_date, 120) = CONVERT(VARCHAR(7), #{prev_month}, 120)
  			AND v_admin_flag = 'Y'	 
 	</insert>
 	
@@ -253,7 +355,8 @@
 	<!-- 다음월 M/M 데이터 삭제 -->
 	<delete id="deleteDefaultMM" parameterType="String">
 		DELETE FROM TBM_DEFAULT_MM
- 		WHERE DATE_FORMAT(d_job_date, '%Y-%m-%d') = #{default_month}		 
+ 		<!-- WHERE DATE_FORMAT(d_job_date, '%Y-%m-%d') = #{default_month} -->
+ 		WHERE CONVERT(VARCHAR(7), d_job_date, 120) = SUBSTRING(#{default_month}, 1, 7)
 	</delete>
 	
 	
@@ -278,7 +381,8 @@
 			,v_complete)
 		SELECT 
 			v_op_type
-			,STR_TO_DATE(#{default_month}, '%Y-%m-%d %H:%i:%s')
+			<!-- ,STR_TO_DATE(#{default_month}, '%Y-%m-%d %H:%i:%s') -->
+			,CONVERT(DATETIME,#{default_month})
 			,'N'
 			,v_dept_code
 			,v_dept_code_name
@@ -290,11 +394,14 @@
 			,d_retirement_date
 			,#{month_count}
 			,v_apply	           
-			,now()
-			,now()
+			<!-- ,now()
+			,now() -->
+			,GETDATE()
+			,GETDATE()
 			,'N'
 		FROM TBM_DEFAULT_MM
- 		WHERE DATE_FORMAT(d_job_date, '%Y-%m-%d') = #{prev_month}	
+ 		<!-- WHERE DATE_FORMAT(d_job_date, '%Y-%m-%d') = #{prev_month} -->
+ 		WHERE CONVERT(VARCHAR(7), d_job_date, 120) = CONVERT(VARCHAR(7), #{prev_month}, 120)	
 			AND v_apply = 'Y'	 
 	</insert>
 	
@@ -311,12 +418,15 @@
 			,d_update)
 		VALUES 
 			('AM001'
-			,STR_TO_DATE(#{d_job_date}, '%Y-%m-%d %H:%i:%s')
+			<!-- ,STR_TO_DATE(#{d_job_date}, '%Y-%m-%d %H:%i:%s') -->
+			,CONVERT(DATETIME,replace(#{d_job_date},'-','')+'01')
 			,#{i_seq_pk}
 			,'Y'
 			,'Y'
-			,now()
-			,now())
+			<!-- ,now()
+			,now()) -->
+			,GETDATE()
+			,GETDATE())
 	</insert>
 	
 	
@@ -324,7 +434,8 @@
 	<update id="getConfirmorEdit" parameterType="GetConfirmorBean">
 		UPDATE TBM_CONFIRMOR 
 		SET i_user_number = #{i_seq_pk}
-			d_update = now()
+			<!-- , d_update = now() -->
+			, d_update = GETDATE()
 	</update>
 	
 	
@@ -369,7 +480,8 @@
 			,v_man_seq as userNum
 			,CASE WHEN v_useok = 'Y' 
 				THEN v_user_name_k 
-				ELSE CONCAT(v_user_name_k, ' /퇴사')
+				<!-- ELSE CONCAT(v_user_name_k, ' /퇴사') -->
+				ELSE v_user_name_k + ' /퇴사'
 				END as userName
 		FROM TBG_USER
 		WHERE v_man_seq is not null
@@ -383,7 +495,8 @@
 			,(SELECT SUM(d_mm)
 				FROM (SELECT dm.i_seq_pk
 						,dm.v_op_type
-						,DATE_FORMAT(dm.d_job_date, '%Y-%m') as d_job_date
+						<!-- ,DATE_FORMAT(dm.d_job_date, '%Y-%m') as d_job_date -->
+						,CONVERT(VARCHAR(7), d_job_date, 120) as d_job_date
 						,dm.v_disable
 						,dm.v_dept_code
 						,dm.v_dept_code_name
@@ -394,14 +507,18 @@
 						,dm.v_apply
 						,dm.d_indate
 						,dm.d_update
-						,CASE WHEN DATE_FORMAT(dm.d_enter_date, '%Y-%m')='1900-01' 
+						<!-- ,CASE WHEN DATE_FORMAT(dm.d_enter_date, '%Y-%m')='1900-01' 
 							THEN '' 
 							ELSE DATE_FORMAT(dm.d_enter_date, '%Y-%m') 
 							END as d_enter_date
 						,CASE WHEN DATE_FORMAT(dm.d_retirement_date, '%Y-%m-%d')='1900-01' 
 							THEN '' 
 							ELSE DATE_FORMAT(dm.d_retirement_date, '%Y-%m') 
-							END as d_retirement_date
+							END as d_retirement_date -->
+						,case when CONVERT(VARCHAR(10), dm.d_enter_date, 120)='1900-01-01' then '' else 
+							CONVERT(VARCHAR(10), dm.d_enter_date, 120) end AS d_enter_date
+		      	 		,case when CONVERT(VARCHAR(10), dm.d_retirement_date, 120)='1900-01-01' then '' else 
+							CONVERT(VARCHAR(10), dm.d_retirement_date, 120)end AS d_retirement_date
 						,dm.i_day_count
 						,'그라비티' as s_op_type_name
 						,u.v_user_name_k
@@ -409,7 +526,8 @@
 					FROM TBM_DEFAULT_MM dm
 					JOIN TBG_USER u on dm.i_user_number = u.i_seq_pk
 					WHERE dm.v_apply = 'Y'
-						AND DATE_FORMAT(dm.d_job_date, '%Y-%m') = #{search_date}
+						<!-- AND DATE_FORMAT(dm.d_job_date, '%Y-%m') = #{search_date} -->
+						AND CONVERT(VARCHAR(7), dm.d_job_date, 120) = #{search_date}
 						<if test="search_dept_seq != null and search_dept_seq != ''"> 
 							AND i_dept_seq = #{search_dept_seq}
 						</if>
@@ -417,7 +535,8 @@
 			) as d_mm_sum
 		FROM (SELECT dm.i_seq_pk
 					,dm.v_op_type
-					,DATE_FORMAT(dm.d_job_date, '%Y-%m') as d_job_date
+					<!-- ,DATE_FORMAT(dm.d_job_date, '%Y-%m') as d_job_date -->
+					,CONVERT(VARCHAR(7), d_job_date, 120) as d_job_date
 					,dm.v_disable
 					,dm.v_dept_code
 					,dm.v_dept_code_name
@@ -428,14 +547,18 @@
 					,dm.v_apply
 					,dm.d_indate
 					,dm.d_update
-					,CASE WHEN DATE_FORMAT(dm.d_enter_date, '%Y-%m')='1900-01'
+					<!-- ,CASE WHEN DATE_FORMAT(dm.d_enter_date, '%Y-%m')='1900-01'
 						THEN '' 
 						ELSE DATE_FORMAT(dm.d_enter_date, '%Y-%m') 
 						END as d_enter_date
 					,CASE WHEN DATE_FORMAT(dm.d_retirement_date, '%Y-%m')='1900-01'
 						THEN '' 
 						ELSE DATE_FORMAT(dm.d_retirement_date, '%Y-%m')
-						END as d_retirement_date
+						END as d_retirement_date -->
+					,case when CONVERT(VARCHAR(10), dm.d_enter_date, 120)='1900-01-01' then '' else 
+							CONVERT(VARCHAR(10), dm.d_enter_date, 120) end AS d_enter_date
+		      	 	,case when CONVERT(VARCHAR(10), dm.d_retirement_date, 120)='1900-01-01' then '' else 
+						CONVERT(VARCHAR(10), dm.d_retirement_date, 120)end AS d_retirement_date
 					,dm.i_day_count
 					,'그라비티' as s_op_type_name
 					,u.v_user_name_k
@@ -443,7 +566,8 @@
 				FROM TBM_DEFAULT_MM dm
 				JOIN TBG_USER u on dm.i_user_number = u.i_seq_pk
 				WHERE dm.v_apply = 'Y'
-					AND DATE_FORMAT(dm.d_job_date, '%Y-%m') = #{search_date}
+					<!-- AND DATE_FORMAT(dm.d_job_date, '%Y-%m') = #{search_date} -->
+					AND CONVERT(VARCHAR(7), dm.d_job_date, 120) = #{search_date}
 					<if test="search_dept_seq != null and search_dept_seq != ''"> 
 						AND i_dept_seq = #{search_dept_seq}
 					</if>
@@ -477,7 +601,8 @@
 			,v_complete)
 		VALUES 
 			('AM001'
-			,STR_TO_DATE(#{d_job_date}, '%Y-%m-%d %H:%i:%s')
+			<!-- ,STR_TO_DATE(#{d_job_date}, '%Y-%m-%d %H:%i:%s') -->
+			,CONVERT(DATETIME,replace(#{d_job_date},'-','')+'01')
 			,'N'
 			,#{v_dept_code}
 			,#{v_dept_code_name}
@@ -485,16 +610,20 @@
 			,#{v_dept_name}
 			,#{i_user_number}
 			,#{d_mm}
-			,STR_TO_DATE(#{d_enter_date}, '%Y-%m-%d %H:%i:%s')
+			<!-- ,STR_TO_DATE(#{d_enter_date}, '%Y-%m-%d %H:%i:%s') -->
+			,CONVERT(DATETIME,replace(#{d_enter_date},'-','')+'01')
 			<if test="d_retirement_date != null and d_retirement_date != ''"> 
-				,STR_TO_DATE(#{d_retirement_date}, '%Y-%m-%d %H:%i:%s')
+				<!-- ,STR_TO_DATE(#{d_retirement_date}, '%Y-%m-%d %H:%i:%s') -->
+				,CONVERT(DATETIME,replace(#{d_retirement_date},'-','')+'01')
 			</if>
 			,#{i_day_count}
 			,'Y'
 			,#{i_reg_user_number}
-			,now()
+			<!-- ,now() -->
+			,GETDATE()
 			,#{i_update_user_number}
-			,now()
+			<!-- ,now() -->
+			,GETDATE()
 			,'N')
 	</insert>
 	
@@ -508,12 +637,15 @@
 			,v_dept_name = #{v_dept_name}
 			,i_user_number = #{i_user_number}
 			,d_mm = #{d_mm}
-			,d_enter_date = STR_TO_DATE(#{d_enter_date}, '%Y-%m-%d %H:%i:%s')
+			<!-- ,d_enter_date = STR_TO_DATE(#{d_enter_date}, '%Y-%m-%d %H:%i:%s') -->
+			,d_enter_date = CONVERT(DATETIME,replace(#{d_enter_date},'-','')+'01')
 			<if test="d_retirement_date != null and d_retirement_date != ''"> 
-				,d_retirement_date = STR_TO_DATE(#{d_retirement_date}, '%Y-%m-%d %H:%i:%s')
+				<!-- ,d_retirement_date = STR_TO_DATE(#{d_retirement_date}, '%Y-%m-%d %H:%i:%s') -->
+				,d_retirement_date = CONVERT(DATETIME,replace(#{d_retirement_date},'-','')+'01')
 			</if>
 			,i_day_count = #{i_day_count}
-			,d_update = now()
+			<!-- ,d_update = now() -->
+			,d_update = GETDATE()
 		WHERE i_seq_pk = #{i_seq_pk}
 	</update>
 	
@@ -522,8 +654,157 @@
 	<update id="getCompleteMM" parameterType="ConfirmorBean">
 		UPDATE TBM_DEFAULT_MM SET
 			v_disable = #{v_disable}
-			,d_update = now()
+			<!-- ,d_update = now() -->
+			,d_update = GETDATE()
 		WHERE i_seq_pk = #{i_seq_pk}
 	</update>
+	
+	
+	<!-- 직원 조회 -->
+	<select id="getUserSearch" parameterType="SearchBean"  resultType="GetUserBean">
+		SELECT a.i_seq_pk as userSEQ
+			, a.v_user_id as userID
+			, a.v_mail_addr as userMail
+			, a.v_user_name_k as userName
+			, a.v_man_seq as userNum
+			, 'Y' as userAuthYN
+		FROM TBG_USER a, TBG_USER_AUTH b
+		WHERE a.i_seq_pk in (b.v_user_id)
+			AND b.v_auth = 'G0013'
+			<if test="search_user_seq != null and search_user_seq != ''"> 
+				AND a.i_seq_pk = #{search_user_seq}
+			</if>
+			<if test="search_disable != null and search_disable != ''"> 
+				AND a.v_useok = #{search_disable}
+			</if>
+		GROUP BY a.i_seq_pk, a.v_user_id, a.v_mail_addr, a.v_user_name_k, a.v_man_seq
+
+		UNION
+
+		SELECT a.i_seq_pk as userSEQ
+			, a.v_user_id as userID
+			, a.v_mail_addr as userMail
+			, a.v_user_name_k as userName
+			, a.v_man_seq as userNum
+			, 'N' as userAuthYN
+		FROM TBG_USER a, TBG_USER_AUTH b
+		WHERE a.i_seq_pk not in (SELECT v_user_id FROM TBG_USER_AUTH WHERE v_auth = 'G0013')
+			<if test="search_user_seq != null and search_user_seq != ''"> 
+				AND a.i_seq_pk = #{search_user_seq}
+			</if>
+			<if test="search_disable != null and search_disable != ''"> 
+				AND a.v_useok = #{search_disable}
+			</if>
+		GROUP BY a.i_seq_pk, a.v_user_id, a.v_mail_addr, a.v_user_name_k, a.v_man_seq
+	</select>
+	
+	
+	<!-- 직원 추가 -->
+	<insert id="getUserInsert" parameterType="getUserBean">
+		INSERT INTO TBG_USER
+			(v_user_id
+			, v_mail_addr
+			, v_user_name_k
+			, v_man_seq
+			, v_enterday
+			, v_useok)
+		VALUES
+			(#{userID}
+			, #{userMail}
+			, #{userName}
+			, #{userNum}
+			<!-- , DATE_FORMAT(now(), '%Y/%m/%d') -->
+			,CONVERT(VARCHAR, GETDATE(), 111)
+			, 'Y')
+	</insert>
+	
+	
+	<!-- 직원 수정 -->
+	<update id="getUserEdit" parameterType="getUserBean">
+		UPDATE TBG_USER SET
+			v_user_id = #{userID}
+			, v_mail_addr = #{userMail}
+			, v_user_name_k = #{userName}
+			, v_man_seq = #{userNum}
+		WHERE i_seq_pk = #{userSEQ}
+	</update>
+	
+	
+	<!-- 직원 관리자 추가 -->
+	<insert id="getAddAuth" parameterType="getUserBean">
+		INSERT INTO TBG_USER_AUTH
+			(v_user_id
+			, v_user_name
+			, v_auth)
+		VALUES
+			(#{userSEQ}
+			, #{userName}
+			, 'G0013')
+	</insert>
+	
+	
+	<!-- 직원 관리자 삭제 -->
+	<insert id="getDeleteAuth" parameterType="getUserBean">
+		DELETE FROM TBG_USER_AUTH
+		WHERE v_user_id = #{userSEQ}
+			AND v_auth = 'G0013'
+	</insert>
+	
+	
+	<!-- 팀 추가 -->
+	<insert id="getTeamInsert" parameterType="getDeptBean">
+		INSERT INTO TBG_DEPT
+			(v_dept_name_k
+			, i_sort
+			, i_dept_up
+			, i_step
+			, v_useok
+			, v_user_name
+			, v_user_id
+			, v_user_ip
+			, i_dept_seq
+			, v_dept_name
+			, v_dept_name_full
+			, d_regdate
+			, v_con_path)
+		VALUES
+			(#{v_dept_name_k}
+			, #{i_sort}
+			, #{i_dept_up}
+			, #{i_step}
+			, 'Y'
+			, #{v_user_name}
+			, #{v_user_seq}
+			, #{v_user_ip}
+			, 131
+			, '재무기획 Unit'
+			, 'CFO 파이낸스센터/재무기획 Unit'
+			<!-- , DATE_FORMAT(now(), '%Y/%m/%d') -->
+			, CONVERT(VARCHAR, GETDATE(), 111)
+			, 'A0001/')
+	</insert>
+	
+	
+	<!-- 팀 수정 -->
+	<update id="getTeamEdit" parameterType="getDeptBean">
+		UPDATE TBG_DEPT SET
+			v_dept_name_k = #{v_dept_name_k}
+			, i_sort = #{i_sort}
+			, i_dept_up = #{i_dept_up}
+			, i_step = #{i_step}
+			, v_user_name = #{v_user_name}
+			, v_user_id = #{v_user_seq}
+			<!-- , d_regdate = DATE_FORMAT(now(), '%Y/%m/%d') -->
+			, d_regdate = CONVERT(VARCHAR, GETDATE(), 111)
+		WHERE i_seq_pk = #{i_seq_pk}
+	</update>
+	
+	
+	<!-- 팀 삭제 -->
+	<delete id="getTeamDelete" parameterType="getDeptBean">
+		UPDATE TBG_DEPT SET
+			v_useok = 'N'
+ 		WHERE i_seq_pk = #{i_seq_pk}
+	</delete>
 
 </mapper>

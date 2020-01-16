@@ -9,390 +9,307 @@
 <script type="text/javascript" src="/mm/common/js/jquery-3.3.1.js"></script>
 <script type="text/javascript" src="/mm/common/js/select2.js"></script>
 <script type="text/javascript">
-	$(function() {
-		
-		$("#search_project_seq").select2();
-		
-		//해당 날짜 프로젝트 조회
-		$("#btn_search").click(function() {
-			
-			$("#urlPage").val("projectCode");
-			$("#methodType").val("search");
-			
-			if($("#search_date option:selected").val() == ""){
-				alert("작업월을 선택해 주세요.");
-				
-			} else {
-				doSubmit();
-				
-			}
-		});
-		
-		
-		//다음달 프로젝트 데이터 입력
-		$("#btn_prev_month").click(function() {
-						
-			$("#urlPage").val("projectCode");
-			$("#methodType").val("addPrev");
-			
-			if(false!=confirm($("#prev_month").val() + " 데이터가 " 
-					+ $("#default_month").val() + " 데이터로 저장됩니다.\r\n"
-					+ "기존에 저장된 " + $("#default_month").val() + " 데이터는 삭제 됩니다.\r\n"
-					+ "저장 하시겠습니까?")){
-				doSubmit();
-			}
-			
-		});
-		
-		
-		//프로젝트 엑셀 다운로드
-		$("#projectDown").click(function() {
-						
-			$("#urlPage").val("projectCode");
-			$("#methodType").val("excel");
-			
-			doSubmit();
-			
-		});
-		
-		
-		//프로젝트 추가
-		$("#projectAdd").click(function() {
-			
-			var mytable = document.getElementById('projectInserEdit');
-			
-			document.getElementById("projectAddTable").style.display = "block";
-			
-			if(mytable.rows.length > 1){
-				for(var i = 1; mytable.rows.length != i; i){
-						
-					mytable.deleteRow(1);
-				}
-			}					
+$(function() {
 	
-			row = mytable.insertRow(mytable.rows.length);
-			
-			cell1 = row.insertCell(0);
-			cell2 = row.insertCell(1);
-			cell3 = row.insertCell(2);
-			cell4 = row.insertCell(3);
+	$("#search_user_seq").select2();
+	
+	//직원 조회
+	$("#btn_search").click(function() {
+		
+		$("#urlPage").val("userSuperintend");
+		$("#methodType").val("normal");
+		
+		doSubmit();
+	});
+	
+	
+	//직원 추가
+	$("#userAdd").click(function() {
+		
+		var mytable = document.getElementById('userInserEdit');
+		
+		document.getElementById("userAddTable").style.display = "block";
+		
+		if(mytable.rows.length > 1){
+			for(var i = 1; mytable.rows.length != i; i){
+					
+				mytable.deleteRow(1);
+			}
+		}
+		
+		row = mytable.insertRow(mytable.rows.length);
+		
+		cell1 = row.insertCell(0);
+		cell2 = row.insertCell(1);
+		cell3 = row.insertCell(2);
+		cell4 = row.insertCell(3);
+		cell5 = row.insertCell(4);
 
-			cell1.innerHTML = "<td><select id='addProjectDate' name='addProjectDate' class='form-control'><option value=''>작업월</option><c:forEach var='item' items='${lMonth }'><option value='${item }'>${item }</option></c:forEach></select></td>";
-			cell2.innerHTML = "<td><input type='hidden'	id='addProjectSeq'	name='addProjectSeq' value='' /><input type='checkbox' id='addProjectCheck' name='addProjectCheck' />     check(Y)</td>";
-			cell3.innerHTML = "<td><input type='text' id='addProjectCode' name='addProjectCode'/></td>";
-			cell4.innerHTML = "<td><input type='text' id='addProjectName' name='addProjectName' style='width: 300px;'/></td>";
-			
-			$("#projectState").val("projectAdd");
-		});
+		cell1.innerHTML = "<td><input type='text' id='addUserId' name='addUserId'/></td>";
+		cell2.innerHTML = "<td><input type='text' id='addUserMail' name='addUserMail'/></td>";
+		cell3.innerHTML = "<td><input type='text' id='addUserName' name='addUserName'/></td>";
+		cell4.innerHTML = "<td><input type='text' id='addUserNum' name='addUserNum'/></td>";
+		cell5.innerHTML = "<td><input type='checkbox' id='userAuthYN' name='userAuthYN' />     check(Y)</td>";
 		
-		
-		//프로젝트 수정
-		$("#projectEdit").click(function() {
-			
-			var projectSeq = "";
-			var projectNum = "";
-			var projectName = "";
-			var projectYN = "";
-			var choice = 0;
-			
-			var mytable = document.getElementById('projectInserEdit');
-			
-			if(mytable.rows.length > 1){
-				for(var i = 1; mytable.rows.length != i; i){
-					
-					mytable.deleteRow(1);
-				}
-			}
-			
-			$("[name='checkProject']").each(function(){
-				
-				if($(this).is(":checked")){
-					
-					document.getElementById("projectAddTable").style.display = "block";
-					//index 찾기
-					projectIndex = $(this).closest('tr').index();
-					
-					projectSeq = $(this).val();
-					projectYN = $(this).closest('tr').find('[name="projectYN"]').text();
-					projectNum = $(this).closest('tr').find('[name="projectNum"]').text();
-					projectName = $(this).closest('tr').find('[name="projectName"]').text();
-					
-					choice ++;
-				}
-			});
-			
- 			if(choice == 0) {
- 				
- 				document.getElementById("projectAddTable").style.display = "none";
-				alert("수정할 프로젝트를 선택해 주세요.");
-			} else if(choice > 1) {
-				
-				document.getElementById("projectAddTable").style.display = "none";
-				alert("프로젝트를 하나만 선택해주세요.");
-			} else {
-				
-				row = mytable.insertRow(mytable.rows.length);
-				
-				cell1 = row.insertCell(0);
-				cell2 = row.insertCell(1);
-				cell3 = row.insertCell(2);
-				cell4 = row.insertCell(3);
-				
-				cell1.innerHTML = "<td><input type='text' id='addProjectDate' name='addProjectDate' value='${searchBean.search_date}' readonly style='text-align:center; border: 0;' /></td>";
-				
-				if(projectYN == "Y") {
-					cell2.innerHTML = "<td><input type='hidden'	id='addProjectSeq'	name='addProjectSeq' value='" + projectSeq + "' /><input type='checkbox' id='addProjectCheck' name='addProjectCheck' checked='checked' />     check(Y)</td>";
-				} else {
-					cell2.innerHTML = "<td><input type='hidden'	id='addProjectSeq'	name='addProjectSeq' value='" + projectSeq + "' /><input type='checkbox' id='addProjectCheck' name='addProjectCheck' />     check(Y)</td>";	
-				}
-				
-				cell3.innerHTML = "<td><input type='text' id='addProjectCode' name='addProjectCode' value='" + projectNum + "'/></td>";
-				cell4.innerHTML = "<td><input type='text' id='addProjectName' name='addProjectName' value='" + projectName + "' style='width: 300px;'/></td>";
-				
-				$("#projectState").val("projectEdit");
-			}
-			
-		});
-		
-		
-		//프로젝트 추가/수정 취소
-		$("#btn_delete").click(function() {
-			
-			document.getElementById("projectAddTable").style.display = "block";
-			var mytable = document.getElementById('projectInserEdit');
-				
-			if(mytable.rows.length > 1){
-				for(var i = 1; mytable.rows.length != i; i){
-					
-					mytable.deleteRow(1);
-				}
-			}
-	
-			document.getElementById("projectAddTable").style.display = "none";
-		});
-		
-		
-		//프로젝트 추가/수정 저장
-		$("#btn_save").click(function() {
-			
-			$("#urlPage").val("projectCode");
-			$("#methodType").val("save");
-			
-			if($("#addProjectCheck").is(":checked")){
-				$("#projectUseYN").val("Y");
-			} else {
-				$("#projectUseYN").val("N");
-			}
-			
-			if($("#addProjectDate").val() == "" || $("#addProjectCode").val() == "" || $("#addProjectName").val() == "") {
-				
-				alert("작업년도 또는 프로젝트 코드, 프로젝트 명을 입력하지 않았습니다.");
-			} else {
-				
-				doSubmit();
-			}
-			
-			
-		});
-		
-	//$(function(){}) 종료	
-	})
+		$("#userState").val("userAdd");
+	});
 	
 	
-	//프로젝트 사용 유무 변경
-	function projectUse(use){
+	//직원 수정
+	$("#userEdit").click(function() {
 		
-		var projectSeqArray = "";
-		var projectUseYN = "";
+		var userSeq = "";
+		var userid = "";
+		var userNum = "";
+		var userName = "";
+		var userMail = "";
+		var userAuthYN = "";
 		var choice = 0;
 		
-		$("[name='checkProject']").each(function(){
+		var mytable = document.getElementById('userInserEdit');
+		
+		document.getElementById("userAddTable").style.display = "block";
+		
+		if(mytable.rows.length > 1){
+			for(var i = 1; mytable.rows.length != i; i){
+				
+				mytable.deleteRow(1);
+			}
+		}
+		
+		$("[name='checkUser']").each(function(){
 			
 			if($(this).is(":checked")){
+				
+				document.getElementById("userAddTable").style.display = "block";
+				//index 찾기
+				projectIndex = $(this).closest('tr').index();
+				
+				userSeq = $(this).val();
+				userid = $(this).closest('tr').find('[name="userID"]').text();
+				userMail = $(this).closest('tr').find('[name="userMail"]').text();
+				userName = $(this).closest('tr').find('[name="userName"]').text();
+				userNum = $(this).closest('tr').find('[name="userNum"]').text();
+				userAuthYN = $(this).closest('tr').find('[name="userAuthYN"]').text();
 				
 				choice ++;
 			}
 		});
 		
 		if(choice == 0) {
-			
-			alert("프로젝트를 선택해주세요.");
+				
+				document.getElementById("userAddTable").style.display = "none";
+			alert("수정할 유저를 선택해 주세요.");
 		} else {
 			
-			$("#urlPage").val("projectCode");
-			$("#methodType").val("projectUse");
-			$("#projectUseYN").val(use);
+			row = mytable.insertRow(mytable.rows.length);
 			
-			$("[name='checkProject']").each(function(){
-				if($(this).is(":checked")){
-					projectSeqArray += $(this).val() + ",";
-				} 
-			});
+			cell1 = row.insertCell(0);
+			cell2 = row.insertCell(1);
+			cell3 = row.insertCell(2);
+			cell4 = row.insertCell(3);
+			cell5 = row.insertCell(4);
 			
-			if($("#projectUseYN").val() == "Y") {
-				
-				projectUseYN = "사용";
-			} else if($("#projectUseYN").val() == "N") {
-				
-				projectUseYN = "미사용";
+			cell1.innerHTML = "<td><input type='hidden'	id='addUserSeq'	name='addUserSeq' value='" + userSeq + "' /><input type='text' id='addUserId' name='addUserId' value='" + userid + "'/></td>";
+			cell2.innerHTML = "<td><input type='text' id='addUserMail' name='addUserMail' value='" + userMail + "'/></td>";
+			cell3.innerHTML = "<td><input type='text' id='addUserName' name='addUserName' value='" + userName + "'/></td>";
+			cell4.innerHTML = "<td><input type='text' id='addUserNum' name='addUserNum' value='" + userNum + "''/></td>";
+			if(userAuthYN == "Y") {
+				cell5.innerHTML = "<td><input type='checkbox' id='userAuthYN' name='userAuthYN' checked='checked' />     check(Y)</td>";
+			} else {
+				cell5.innerHTML = "<td><input type='checkbox' id='userAuthYN' name='userAuthYN' />     check(Y)</td>";	
 			}
-			if(false!=confirm("프로젝트 " + projectUseYN + "으로 변경하시겠습니까?")){
-				
-				$("#projectSeq").val(projectSeqArray);
-				doSubmit();
-			}
+			
+			$("#userState").val("userEdit");
 		}
-	}
+	});
 	
 	
-	//프로젝트 전체 선택
-	function allProject(){
-
-		if($("#allCheckProject").is(":checked")){
-			$("[name='checkProject']").each(function(){
-				$(this)[0].checked = true;
-				
-			});
-		} else {
-			$("[name='checkProject']").each(function(){
-				$(this)[0].checked = false;
-				
-			});
-		}
-	}	
+	//프로젝트 추가/수정 취소
+	$("#btn_delete").click(function() {
 		
+		document.getElementById("userAddTable").style.display = "block";
+		var mytable = document.getElementById('userInserEdit');
+			
+		if(mytable.rows.length > 1){
+			for(var i = 1; mytable.rows.length != i; i){
+				
+				mytable.deleteRow(1);
+			}
+		}
+
+		document.getElementById("userAddTable").style.display = "none";
+	});
+	
+	
+	//직원 추가/수정 저장
+	$("#btn_save").click(function() {
+		
+		$("#urlPage").val("userSuperintend");
+		$("#methodType").val("save");
+		
+		if($("#userAuthYN").is(":checked")){
+			$("#adduserAuthYN").val("Y");
+		} else {
+			$("#adduserAuthYN").val("N");
+		}
+		
+		if($("#addUserId").val() == "" || $("#addUserMail").val() == "" || $("#addUserName").val() == "" || $("#addUserNum").val() == "") {
+			
+			alert("칸을 전부 입력해 주세요.");
+		} else {
+			
+			doSubmit();
+		}
+		
+		
+	});
+	
+	
+	//팀별 입력 현황 엑셀 다운로드
+	$("#btn_download").click(function() {
+		
+		var adminTeamMMSeq = ""
+		
+		$("[name='i_mm_seq_pk']").each(function(){
+				
+			if($(this).is(":checked")){
+				adminTeamMMSeq += $(this).val() + ","
+				$("#adminTeamMMSEQ").val(adminTeamMMSeq);
+			}
+			
+		});
+
+		$("#urlPage").val("userSuperintend");
+		$("#methodType").val("excel");
+		doSubmit();
+	});
+	
+//$(function(){}) 종료 
+})
+	
 </script>
 </head>
 <body>
-	<form id="userInfo" method="post">
-		<input type="hidden"				id="urlPage" 				name="urlPage" 				value="" />
-		<input type="hidden"				id="methodType" 			name="methodType" 			value="" />
-		<input type="hidden"				id="userSEQ"				name="userSEQ" 				value="${userBean.userSEQ } "/>
-		<input type="hidden"				id="userID"					name="userID"				value="${userBean.userID }" />
-		<input type="hidden"				id="userName" 				name="userName" 			value="${userBean.userName }" />
-		<input type="hidden"				id="userMail" 				name="userMail" 			value="${userBean.userMail }" />
-		<input type="hidden"				id="userNum" 				name="userNum" 				value="${userBean.userNum }" />
-		<input type="hidden"				id="userAuth" 				name="userAuth" 			value="${userBean.userAuth }" />
-		<input type="hidden"				id="projectUseYN" 			name="projectUseYN" 		value="" />
-		<input type="hidden"				id="projectState" 			name="projectState" 		value="" />
-		<input type="hidden"				id="projectSeq" 			name="projectSeq" 			value="" />
+<form id="userInfo" method="post" style="width:1600px; margin:auto; margin-top:50px;">
+	<input type="hidden"				id="urlPage" 				name="urlPage" 				value="${urlPage }" />
+	<input type="hidden"				id="methodType" 			name="methodType" 			value="" />
+	<input type="hidden"				id="userSEQ"				name="userSEQ" 				value="${userBean.userSEQ } "/>
+	<input type="hidden"				id="userID"					name="userID"				value="${userBean.userID }" />
+	<input type="hidden"				id="userName" 				name="userName" 			value="${userBean.userName }" />
+	<input type="hidden"				id="userMail" 				name="userMail" 			value="${userBean.userMail }" />
+	<input type="hidden"				id="userNum" 				name="userNum" 				value="${userBean.userNum }" />
+	<input type="hidden"				id="userAuth" 				name="userAuth" 			value="${userBean.userAuth }" />
+	<input type="hidden"				id="userDeptAuth" 			name="userDeptAuth" 		value="${userBean.userDeptAuth }" />
+	<input type="hidden"				id="adduserAuthYN" 			name="adduserAuthYN" 		value="" />
+	<input type="hidden"				id="userState" 				name="userState" 			value="" />
+
+	<jsp:include page="/WEB-INF/form/top.jsp"></jsp:include>
 	
-		<jsp:include page="/WEB-INF/form/top.jsp"></jsp:include>
-		
-		<div class="mm-menu-name"><h5>관리자 M/M (입력자관리)</h5></div>
-		
-		<table class="mm-search">
-			<tr>
-				<th class="text-muted" style="width:60px; text-align: right;">작업월</th>
-				<td style="width:120px;">
-					<select id="search_date" name="search_date" class="form-control">
-						<option value="">작업월</option>
-						<c:forEach var='item' items="${lMonth }">
-							<option value="${item }" ${item == searchBean.search_date ? "selected='selected'" : ""}>${item }</option>
-						</c:forEach>
-					</select>
-				</td>
-				<th class="text-muted" style="width:120px; text-align: right;">프로젝트 명</th>
-				<td style="width:200px;">
-					<select id="search_project_seq" name="search_project_seq" class="form-control">
-						<option value="">프로젝트 명</option>
-						<c:forEach var='item' items="${lProjectCode }">
-							<option value="${item.i_seq_pk }" ${item.i_seq_pk == searchBean.search_project_seq ? "selected='selected'" : ""}>${item.v_project_name }</option>
-						</c:forEach>
-					</select>
-				</td>
-				<th class="text-muted" style="width:100px; text-align: right;">사용 유무</th>
-				<td style="width:120px;">
-					<select id="project_user_flag" name="project_user_flag" class="form-control">
-						<option value="" ${"" == searchBean.project_user_flag ? "selected='selected'" : ""}>전부</option>
-						<option value="Y" ${"Y" == searchBean.project_user_flag ? "selected='selected'" : ""}>사용</option>
-						<option value="N" ${"N" == searchBean.project_user_flag ? "selected='selected'" : ""}>미사용</option>
-					</select>
-				</td>
-				<td class="text-muted" style="width:60px; text-align: right;">
-					<button type="button" id="btn_search" name="btn_search" class="btn btn-secondary btn-sm">조회</button>
-				</td>
-			</tr>
-			<tr>
-				<td colspan="5" style="margin-top:10px;">
-					<button type="button"id="projectDown" name="projectDown" class="btn btn-secondary btn-sm" >다운로드</button>
-					<c:forEach var='item' items="${lMonth }" begin="1" end="1">
-						<button type="button" id="btn_prev_month" name="btn_prev_month" class="btn btn-secondary btn-sm">${item } 데이터 가져오기</button>
-						<input type="hidden" name="prev_month" id="prev_month" value="${item}"/>
+	<div class="mm-menu-name"><h5>관리자 M/M (직원 관리)</h5></div>
+	
+	<table class="mm-search">
+		<tr>
+			<th class="text-muted" style="width:50px; text-align: left;">성명</th>
+			<td>
+				<select id="search_user_seq" name="search_user_seq" style="width:180px;" class="form-control">
+					<option value="">성명</option>
+					<c:forEach var='item' items="${getUserBean }">
+						<option value="${item.userSEQ}" ${item.userSEQ == searchBean.search_user_seq ? "selected='selected'" : ""}>${item.userName }</option>
 					</c:forEach>
-					<c:forEach var='item' items="${lMonth }" begin="0" end="0">
-						<input type="hidden" id="default_month" name="default_month" value="${item}"/>
-					</c:forEach>
-					<button type="button" id="projectUseY" name="projectUseY"  class="btn btn-outline-primary" onclick="projectUse('Y')">사용</button>
-					<button type="button" id="projectUseN" name="projectUseN" class="btn btn-outline-primary" onclick="projectUse('N')">미사용</button>
-					<button type="button" id="projectAdd" name="projectAdd" class="btn btn-outline-primary">추가</button>
-					<button type="button" id="projectEdit" name="projectEdit" class="btn btn-outline-primary">수정</button>
-				</td>
-			</tr>
-		</table>
-		
-		
-		<!-- 프로젝트 추가 테이블 -->
-		<table id="projectAddTable" name="projectAddTable" align="right" style="display:none;  margin-right:15px">
-			<tr>
-				<td style="border-bottom-width: 0px; padding-bottom: 0px;">
-					<table id="projectInserEdit" name="projectInserEdit" class="table table-bordered">
-						<thead>
-							<tr class="table-primary">
-								<th scope="col" style="color: #848484; text-align: center; width: 200px;">작업년도</th>
-								<th scope="col" style="color: #848484; text-align: center;">사용유무 선택</th>
-								<th scope="col" style="color: #848484; text-align: center;">프로젝트 코드</th>
-								<th scope="col" style="color: #848484; text-align: center; width: 300px;">프로젝트 명</th>
-							</tr>
-						</thead>
-					</table>
-				</td>
-			</tr>
-			<tr>
-				<td style="border-top-width: 0px; padding-top: 0px; padding-bottom:10px;">
-					<table align="right">
-						<tr>
-							<th>
-								<input type="button" id="btn_save" name="btn_save" class="btn btn-primary btn-sm" value="저장" style="width:60px;" />
-							</th>
-							<th>
-								<input type="button" id="btn_delete" name="btn_delete" class="btn btn-primary btn-sm" value="취소" style="width:60px;" />
-							</th>
+				</select>
+			</td>
+			<th class="text-muted" style="width:100px; text-align: center;">재직 유무</th>
+			<td>
+				<select id="search_use" name="search_use" class="form-control">
+					<option value="" ${"" == searchBean.search_disable ? "selected='selected'" : ""}>모두</option>
+					<option value="Y" ${"Y" == searchBean.search_disable ? "selected='selected'" : ""}>재직</option>
+					<option value="N" ${"N" == searchBean.search_disable ? "selected='selected'" : ""}>퇴사</option>
+				</select>
+			</td>
+			<td class="text-muted" style="width:60px; text-align: right;">
+				<button type="button" id="btn_search" name="btn_search" class="btn btn-secondary btn-sm">조회</button>
+			</td>
+		</tr>
+	</table>
+	
+	<table class="mm-search">
+		<tr>
+			<td colspan="5" style="margin-top:10px;">
+				<button type="button" id="btn_download" name="btn_download" class="btn btn-outline-primary">Excel 다운로드</button>
+				<button type="button" id="userAdd" name="userAdd" class="btn btn-outline-primary">추가</button>
+				<button type="button" id="userEdit" name="userEdit" class="btn btn-outline-primary">수정</button>
+			</td>
+		</tr>
+	</table>
+	
+	
+	<!-- 직원 추가 테이블 -->
+	<table id="userAddTable" name="userAddTable" style="display:none;  margin-right:15px">
+		<tr>
+			<td style="border-bottom-width: 0px; padding-bottom: 0px;">
+				<table id="userInserEdit" name="userInserEdit" class="table table-bordered">
+					<thead>
+						<tr class="table-primary">
+							<th scope="col" style="color: #050505; text-align: center; font-size: 14px;">아이디</th>
+							<th scope="col" style="color: #050505; text-align: center; font-size: 14px;">이메일</th>
+							<th scope="col" style="color: #050505; text-align: center; font-size: 14px;">이름</th>
+							<th scope="col" style="color: #050505; text-align: center; font-size: 14px;">사원번호</th>
+							<th scope="col" style="color: #050505; text-align: center; font-size: 14px;">관리자 유무</th>
 						</tr>
-					</table>
-				</td>
-			</tr>
-		</table>
-		
-		
-		<!-- 프로젝트 조회 목록 -->
-		<table style="width: 1000px; margin-left: 5px">
-			<tr>
-				<td style="padding-right: 10px;">
-					<table class="table table-bordered">
-						<thead>
-							<tr class="table-primary">
-								<th scope="col" width=90px style="color: #848484; text-align: center;"><input type="checkbox" id="allCheckProject" name="allCheckProject" onclick="allProject()"/>  선택</th>
-								<th scope="col" width=100px style="color: #848484; text-align: center;">사용 유무</th>
-								<th scope="col" style="color: #848484; text-align: center;">프로젝트 코드</th>
-								<th scope="col" style="color: #848484; text-align: center;">프로젝트 명</th>
-							</tr>
-						</thead>
-						<c:if test="${lProjectCode.size() != 0 }">
-							<c:forEach var="item" items="${lProjectCode }">
-								<tr>
-									<td style="text-align: center;"><input type="checkbox" id="checkProject" name="checkProject" value="${item.i_seq_pk }"/></td>
-									<td id="projectYN" name="projectYN" style="text-align: center;">${item.v_disable }</td>
-									<td id="projectNum" name="projectNum">${item.v_project_code }</td>
-									<td id="projectName" name="projectName">${item.v_project_name }</td>
-								</tr>
-							</c:forEach>
-						</c:if>
-					</table>
-				</td>
-			</tr>
-		</table>
+					</thead>
+				</table>
+			</td>
+		</tr>
+		<tr>
+			<td style="border-top-width: 0px; padding-top: 0px; padding-bottom:10px;">
+				<table align="right">
+					<tr>
+						<th>
+							<input type="button" id="btn_save" name="btn_save" class="btn btn-primary btn-sm" value="저장" style="width:60px;" />
+						</th>
+						<th>
+							<input type="button" id="btn_delete" name="btn_delete" class="btn btn-primary btn-sm" value="취소" style="width:60px;" />
+						</th>
+					</tr>
+				</table>
+			</td>
+		</tr>
+	</table>
 	
-	</form>
+	
+	<!-- 프로젝트 조회 목록 -->
+	<table class="table" style="width: 1000px; margin-left: 5px">
+		<tr>
+			<td style="padding-right: 10px;">
+				<table class="table table-bordered">
+					<thead>
+						<tr class="table-primary">
+							<th scope="col" style="color: #050505; text-align: center; font-size: 14px;">선택</th>
+							<th scope="col" style="color: #050505; text-align: center; font-size: 14px;">아이디</th>
+							<th scope="col" style="color: #050505; text-align: center; font-size: 14px;">이메일</th>
+							<th scope="col" style="color: #050505; text-align: center; font-size: 14px;">이름</th>
+							<th scope="col" style="color: #050505; text-align: center; font-size: 14px;">사원번호</th>
+							<th scope="col" style="color: #050505; text-align: center; font-size: 14px;">관리자 유무</th>
+						</tr>
+					</thead>
+					<c:if test="${getUserBean.size() != 0 }">
+						<c:forEach var="item" items="${getUserBean }">
+							<tr>
+								<td style="text-align: center; font-size: 14px;"><input type="radio" id="checkUser" name="checkUser" value="${item.userSEQ }"/></td>
+								<td id="userID" name="userID" style="font-size: 14px;">${item.userID }</td>
+								<td id="userMail" name="userMail" style="font-size: 14px;">${item.userMail }</td>
+								<td id="userName" name="userName" style="font-size: 14px;">${item.userName }</td>
+								<td id="userNum" name="userNum" style="font-size: 14px;">${item.userNum }</td>
+								<td id="userAuthYN" name="userAuthYN" style="font-size: 14px;">${item.userAuthYN }</td>
+							</tr>
+						</c:forEach>
+					</c:if>
+				</table>
+			</td>
+		</tr>
+	</table>
+
+</form>
 </body>
 </html>

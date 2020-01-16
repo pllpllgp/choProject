@@ -30,6 +30,12 @@ public class UserHandler {
 	}
 	
 	
+	//유저 팀별 관리 페이지 권한 유무 확인
+	public int getConfirmorDeptAuth(SearchBean searchBean) {
+		return sqlSession.selectOne(NAMESPACE + ".getConfirmorDeptAuth", searchBean);
+	}
+	
+	
 	//관리자 권한 유무 조회
 	public int getAuthCheck(String userSEQ) {
 		return sqlSession.selectOne(NAMESPACE + ".getAuthCheck", userSEQ);

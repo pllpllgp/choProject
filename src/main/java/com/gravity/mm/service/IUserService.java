@@ -6,8 +6,8 @@ import com.gravity.mm.bean.GetDefaultMMBean;
 import com.gravity.mm.bean.GetProjectCodeBean;
 import com.gravity.mm.bean.GetUserBean;
 import com.gravity.mm.bean.SearchBean;
-import com.gravity.mm.bean.UserBean;
 import com.gravity.mm.bean.UserMMBean;
+import com.gravity.mm.bean.UserBean;
 
 public interface IUserService {
 	
@@ -15,6 +15,10 @@ public interface IUserService {
 	public UserBean getLoginInfo(String userID);
 	
 	
+	//유저 팀별 관리 페이지 권한 유무 확인
+	public int getConfirmorDeptAuth(SearchBean searchBean);
+	
+		
 	//관리자 권한 유무 조회
 	public int getAuthCheck(String userSEQ);
 	
@@ -46,4 +50,6 @@ public interface IUserService {
 	//유저 M/M 삭제
 	public int getDeleteUserMM(String i_default_mm);
 	
+	
 }
+

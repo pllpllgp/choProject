@@ -4,7 +4,8 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -31,7 +32,7 @@ import com.gravity.mm.util.ExcelView;
 @RequestMapping("/")
 public class AdminTeamController {
 	
-	private static Logger LOG = Logger.getLogger(AdminTeamController.class);
+	private static Logger log = LoggerFactory.getLogger(AdminTeamController.class);
 	
 	@Autowired IAdminService ias;
 	@Autowired IUserService ius;
@@ -41,9 +42,11 @@ public class AdminTeamController {
 	@RequestMapping(value = "adminTeam", params = "methodType=normal", method = RequestMethod.POST)
 	public String login(HttpServletRequest request, @ModelAttribute("userBean")UserBean userBean, Model model) {
 		
-		System.out.println(">>>>>>>>>>>>>>>>>>> adminMM(adminTeam) Merthod = normal <<<<<<<<<<<<<<<<<<<");
+		log.info(">>>>>>>>>>>>>>>>>>> adminMM(adminTeam) Merthod = normal <<<<<<<<<<<<<<<<<<<");
+		
 		
 		model.addAttribute("userBean", userBean);
+		model.addAttribute("urlPage", "adminTeam");
 		
 		return "admin/adminTeam";
 	}
@@ -52,8 +55,8 @@ public class AdminTeamController {
 	//팀별 입력 현황 페이지 조회
 	@RequestMapping(value = "adminTeam", params = "methodType=search", method = RequestMethod.POST)
 	public String search(HttpServletRequest request, @ModelAttribute("userBean")UserBean userBean, @ModelAttribute("searchBean")SearchBean searchBean, Model model) {
-		
-		System.out.println(">>>>>>>>>>>>>>>>>>> adminMM(adminTeam) Merthod = search <<<<<<<<<<<<<<<<<<<");		
+			
+		log.info(">>>>>>>>>>>>>>>>>>> adminMM(adminTeam) Merthod = search <<<<<<<<<<<<<<<<<<<");
 		
 		adminTeamRepeatedSearch(request, userBean, searchBean, model);
 		
@@ -65,7 +68,7 @@ public class AdminTeamController {
 	@RequestMapping(value = "adminTeam", params = "methodType=completeYN", method = RequestMethod.POST)
 	public String completeYN(HttpServletRequest request, @ModelAttribute("userBean")UserBean userBean, @ModelAttribute("searchBean")SearchBean searchBean, Model model) {
 		
-		System.out.println(">>>>>>>>>>>>>>>>>>> adminMM(adminTeam) Merthod = completeYN <<<<<<<<<<<<<<<<<<<");
+		log.info(">>>>>>>>>>>>>>>>>>> adminMM(adminTeam) Merthod = completeYN <<<<<<<<<<<<<<<<<<<");
 		
 		String i_seq_pk 							= request.getParameter("check_MM_seq");
 		String v_disable 								= request.getParameter("disable");
@@ -87,7 +90,7 @@ public class AdminTeamController {
 	@RequestMapping(value = "adminTeam", params = "methodType=write", method = RequestMethod.GET)
 	public String MMWrite(HttpServletRequest request, @ModelAttribute("userBean")UserBean userBean, Model model) {
 				
-		System.out.println(">>>>>>>>>>>>>>>>>>>adminMM(adminTeam) Merthod = write <<<<<<<<<<<<<<<<<<<");
+		log.info(">>>>>>>>>>>>>>>>>>>adminMM(adminTeam) Merthod = write <<<<<<<<<<<<<<<<<<<");
 			
 		SearchBean searchBean			= new SearchBean();
 		String search_date 				= request.getParameter("search_date");
@@ -97,6 +100,9 @@ public class AdminTeamController {
 		searchBean.setSearch_user_seq(userSEQ);
 		searchBean.setSearch_date(search_date);
 		
+		log.info("userSEQ : " + userSEQ);
+		log.info("userMM : " + userMM);
+		
 		searchBean.setProject_user_flag("Y");
 		List<GetProjectCodeBean> lProjectCode = ius.getProjectCode(searchBean);
 		List<GetDefaultMMBean> lUserDefaultMM = ius.getUserDefaultMM(searchBean);
@@ -104,8 +110,9 @@ public class AdminTeamController {
 		model.addAttribute("lUserDefaultMM", lUserDefaultMM);
 		model.addAttribute("lProjectCode", lProjectCode);
 		model.addAttribute("search_date", search_date);
-		model.addAttribute("userSEQ", userSEQ);
-		model.addAttribute("userMM", userMM);
+		model.addAttribute("project_user_SEQ", userSEQ);
+		model.addAttribute("project_user_MM", userMM);
+		model.addAttribute("urlPage", "adminTeam");
 		
 		return "admin/writeAdminTeam";
 
@@ -116,9 +123,9 @@ public class AdminTeamController {
 	@RequestMapping(value = "adminTeam", params = "methodType=save", method = RequestMethod.POST)
 	public String MMSave(HttpServletRequest request, @ModelAttribute("userBean")UserBean userBean, @ModelAttribute("searchBean")SearchBean searchBean, Model model) {
 					
-		System.out.println(">>>>>>>>>>>>>>>>>>> adminMM(adminTeam) Merthod = save <<<<<<<<<<<<<<<<<<<");
+		log.info(">>>>>>>>>>>>>>>>>>>adminMM(adminTeam) Merthod = save <<<<<<<<<<<<<<<<<<<");
 			
-		String i_default_mm				= request.getParameter("i_mm_seq_pk");
+		String i_default_mm				= request.getParameter("project_user_MM_SEQ");
 		String project_SEQ 				= request.getParameter("project_SEQ");
 		String project_MM 				= request.getParameter("project_MM");
 		
@@ -152,7 +159,7 @@ public class AdminTeamController {
 	@RequestMapping(value = "adminTeam", params = "methodType=excel", method = RequestMethod.POST)
 	public View excelDown(HttpServletRequest request, @ModelAttribute("userBean")UserBean userBean, @ModelAttribute("searchBean")SearchBean searchBean, Model model) {
 				
-		System.out.println(">>>>>>>>>>>>>>>>>>> TeamMM Merthod = excelDownload <<<<<<<<<<<<<<<<<<<");
+		log.info(">>>>>>>>>>>>>>>>>>>adminMM(adminTeam) Merthod = excelDownload <<<<<<<<<<<<<<<<<<<");
 			
 		String adminTeamMMSEQ						= request.getParameter("adminTeamMMSEQ");
 		String search_user_seq						= "";
@@ -187,7 +194,7 @@ public class AdminTeamController {
 	//세팅값으로 조회(반복 사용)
 	public String adminTeamRepeatedSearch(HttpServletRequest request, @ModelAttribute("userBean")UserBean userBean, @ModelAttribute("searchBean")SearchBean searchBean, Model model) {
 									
-		System.out.println(">>>>>>>>>>>>>>>>>>> adminMM(adminTeam) Merthod = adminTeamRepeatedSearch <<<<<<<<<<<<<<<<<<<");
+		log.info(">>>>>>>>>>>>>>>>>>>adminMM(adminTeam) Merthod = adminTeamRepeatedSearch <<<<<<<<<<<<<<<<<<<");
 		
 		String search_date 							= request.getParameter("search_date");
 		String search_dept_seq 						= request.getParameter("search_dept_seq");
@@ -208,6 +215,7 @@ public class AdminTeamController {
 		model.addAttribute("lUserProjectGroup", lUserProjectGroup);
 		model.addAttribute("userBean", userBean);
 		model.addAttribute("searchBean", searchBean);
+		model.addAttribute("urlPage", "adminTeam");
 		
 		return "Y";
 

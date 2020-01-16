@@ -5,7 +5,8 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -15,9 +16,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.View;
 
 import com.gravity.mm.bean.AddPrevMonthBean;
-import com.gravity.mm.bean.GetDefaultMMBean;
 import com.gravity.mm.bean.GetProjectCodeBean;
-import com.gravity.mm.bean.GetUserBean;
 import com.gravity.mm.bean.SearchBean;
 import com.gravity.mm.bean.UserBean;
 import com.gravity.mm.service.IAdminService;
@@ -30,7 +29,7 @@ import com.gravity.mm.util.ExcelView;
 @RequestMapping("/")
 public class ProjectCodeContoller {
 	
-	private static Logger LOG = Logger.getLogger(ProjectCodeContoller.class);
+	private static Logger log = LoggerFactory.getLogger(ProjectCodeContoller.class);
 	
 	@Autowired ITeamService its;
 	@Autowired IUserService ius;
@@ -39,10 +38,11 @@ public class ProjectCodeContoller {
 	@RequestMapping(value = "projectCode", params = "methodType=normal", method = RequestMethod.POST)
 	public String projectCode(HttpServletRequest request, @ModelAttribute("userBean")UserBean userBean, Model model) {
 		
-		System.out.println(">>>>>>>>>>>>>>>>>>> adminMM(projectCode) Merthod = normal <<<<<<<<<<<<<<<<<<<");
-		System.out.println("userBean > " + userBean.getUserID());
+		log.info(">>>>>>>>>>>>>>>>>>> adminMM(projectCode) Merthod = normal <<<<<<<<<<<<<<<<<<<");
+		log.info("userBean > " + userBean.getUserID());
 		
 		model.addAttribute("userBean", userBean);
+		model.addAttribute("urlPage", "projectCode");
 		
 		return "admin/projectCode";
 
@@ -53,7 +53,7 @@ public class ProjectCodeContoller {
 	@RequestMapping(value = "projectCode", params = "methodType=search", method = RequestMethod.POST)
 	public String dateChoice(HttpServletRequest request, @ModelAttribute("userBean")UserBean userBean, Model model) {
 		
-		System.out.println(">>>>>>>>>>>>>>>>>>> adminMM(projectCode) Merthod = projectSearch <<<<<<<<<<<<<<<<<<<");
+		log.info(">>>>>>>>>>>>>>>>>>> adminMM(projectCode) Merthod = projectSearch <<<<<<<<<<<<<<<<<<<");
 		
 		SearchBean searchBean						= new SearchBean();
 		
@@ -74,6 +74,7 @@ public class ProjectCodeContoller {
 		model.addAttribute("userBean", userBean);
 		model.addAttribute("searchBean", searchBean);
 		model.addAttribute("lProjectCode", lProjectCode);
+		model.addAttribute("urlPage", "projectCode");
 		
 		return "admin/projectCode";
 
@@ -84,7 +85,7 @@ public class ProjectCodeContoller {
 	@RequestMapping(value = "projectCode", params = "methodType=addPrev", method = RequestMethod.POST)
 	public String addPrevProject(HttpServletRequest request, @ModelAttribute("userBean")UserBean userBean, @ModelAttribute("searchBean")SearchBean searchBean, Model model) {
 		
-		System.out.println(">>>>>>>>>>>>>>>>>>> adminMM(projectCode) Merthod = addPrevMonth <<<<<<<<<<<<<<<<<<<");
+		log.info(">>>>>>>>>>>>>>>>>>> adminMM(projectCode) Merthod = addPrevMonth <<<<<<<<<<<<<<<<<<<");
 		
 		String prev_month 			= request.getParameter("prev_month")+"-01";
 		String default_month 		= request.getParameter("default_month")+"-01";
@@ -94,8 +95,8 @@ public class ProjectCodeContoller {
 		addPrevMonthBean.setPrev_month(prev_month);
 		addPrevMonthBean.setDefault_month(default_month);
 		
-		System.out.println(">>>>>>>>>>>>>>>>>>> prev_month <<<<<<<<<<<<<<<<<<<" + prev_month);
-		System.out.println(">>>>>>>>>>>>>>>>>>> default_month <<<<<<<<<<<<<<<<<<<" + default_month);
+		log.info(">>>>>>>>>>>>>>>>>>> prev_month <<<<<<<<<<<<<<<<<<<" + prev_month);
+		log.info(">>>>>>>>>>>>>>>>>>> default_month <<<<<<<<<<<<<<<<<<<" + default_month);
 		
 		int iResult = ias.addPrevProjectCode(addPrevMonthBean);
 		
@@ -108,7 +109,7 @@ public class ProjectCodeContoller {
 	@RequestMapping(value = "projectCode", params = "methodType=projectUse", method = RequestMethod.POST)
 	public String projectUseYN(HttpServletRequest request, @ModelAttribute("userBean")UserBean userBean, @ModelAttribute("searchBean")SearchBean searchBean, Model model) {
 		
-		System.out.println(">>>>>>>>>>>>>>>>>>> adminMM(projectCode) Merthod = projectUse <<<<<<<<<<<<<<<<<<<");
+		log.info(">>>>>>>>>>>>>>>>>>> adminMM(projectCode) Merthod = projectUse <<<<<<<<<<<<<<<<<<<");
 		
 		GetProjectCodeBean getProjectCodeBean = new GetProjectCodeBean();
 		
@@ -116,8 +117,8 @@ public class ProjectCodeContoller {
 		String v_disable 					= request.getParameter("projectUseYN");
 		String[] arr_v_project_code 		= projectSeq.split(",");
 		
-		System.out.println(">>>>>>>>>>>>>>>>>>> v_disable <<<<<<<<<<<<<<<<<<<" + v_disable);
-		System.out.println(">>>>>>>>>>>>>>>>>>> projectSeqe <<<<<<<<<<<<<<<<<<<" + projectSeq);
+		log.info(">>>>>>>>>>>>>>>>>>> v_disable <<<<<<<<<<<<<<<<<<<" + v_disable);
+		log.info(">>>>>>>>>>>>>>>>>>> projectSeqe <<<<<<<<<<<<<<<<<<<" + projectSeq);
 		
 		getProjectCodeBean.setArr_v_project_code(arr_v_project_code);
 		getProjectCodeBean.setV_disable(v_disable);
@@ -135,7 +136,7 @@ public class ProjectCodeContoller {
 	@RequestMapping(value = "projectCode", params = "methodType=excel", method = RequestMethod.POST)
 	public View excelDown(HttpServletRequest request, @ModelAttribute("userBean")UserBean userBean, @ModelAttribute("searchBean")SearchBean searchBean, Model model) {
 				
-		System.out.println(">>>>>>>>>>>>>>>>>>> adminMM(projectCode) Merthod = excelDownload <<<<<<<<<<<<<<<<<<<");
+		log.info(">>>>>>>>>>>>>>>>>>> adminMM(projectCode) Merthod = excelDownload <<<<<<<<<<<<<<<<<<<");
 			
 		String search_date 							= request.getParameter("search_date");
 		String search_project_seq 					= request.getParameter("search_project_seq");
@@ -167,13 +168,7 @@ public class ProjectCodeContoller {
 	@RequestMapping(value = "projectCode", params = "methodType=save", method = RequestMethod.POST)
 	public String projectInsertEdit(HttpServletRequest request, @ModelAttribute("userBean")UserBean userBean, @ModelAttribute("searchBean")SearchBean searchBean, Model model) {
 									
-		System.out.println(">>>>>>>>>>>>>>>>>>> adminMM(projectCode) Merthod = save <<<<<<<<<<<<<<<<<<<");
-		
-		System.out.println(">>>>>>>>>>>>>>>>>>> aprojectState <<<<<<<<<<<<<<<<<<<" + request.getParameter("projectState"));
-		System.out.println(">>>>>>>>>>>>>>>>>>> projectUseYN <<<<<<<<<<<<<<<<<<<" + request.getParameter("projectUseYN"));
-		System.out.println(">>>>>>>>>>>>>>>>>>> addProjectSeq <<<<<<<<<<<<<<<<<<<" + request.getParameter("addProjectSeq"));
-		System.out.println(">>>>>>>>>>>>>>>>>>> addProjectName <<<<<<<<<<<<<<<<<<<" + request.getParameter("addProjectName"));
-		System.out.println(">>>>>>>>>>>>>>>>>>> addProjectCode <<<<<<<<<<<<<<<<<<<" + request.getParameter("addProjectCode"));
+		log.info(">>>>>>>>>>>>>>>>>>> adminMM(projectCode) Merthod = save <<<<<<<<<<<<<<<<<<<");
 		
 		ArrayList<GetProjectCodeBean> list = new ArrayList<GetProjectCodeBean>();
 		
@@ -208,7 +203,7 @@ public class ProjectCodeContoller {
 	//세팅값으로 프로젝트 조회(반복 사용)
 	public String projectRepeatedSearch(HttpServletRequest request, @ModelAttribute("userBean")UserBean userBean, @ModelAttribute("searchBean")SearchBean searchBean, Model model) {
 									
-		System.out.println(">>>>>>>>>>>>>>>>>>> adminMM(projectCode) Merthod = projectRepeatedSearch <<<<<<<<<<<<<<<<<<<");
+		log.info(">>>>>>>>>>>>>>>>>>> adminMM(projectCode) Merthod = projectRepeatedSearch <<<<<<<<<<<<<<<<<<<");
 		
 		String search_date 							= request.getParameter("search_date");
 		String search_project_seq 					= request.getParameter("search_project_seq");
@@ -227,6 +222,7 @@ public class ProjectCodeContoller {
 		model.addAttribute("userBean", userBean);
 		model.addAttribute("searchBean", searchBean);
 		model.addAttribute("lProjectCode", lProjectCode);
+		model.addAttribute("urlPage", "projectCode");
 		
 		return "Y";
 

@@ -8,229 +8,232 @@
 <title>Gravity M/M</title>
 <script type="text/javascript" src="/mm/common/js/jquery-3.3.1.js"></script>
 <script type="text/javascript">
-	$(function() {
+$(function() {
+	
+	$("#btn_save").hide();
+	$(".data_edit").hide();
+	
+	//당월 M/M 검색
+	$("#btn_search").click(function() {
 		
-		$("#btn_save").hide();
-		$(".data_edit").hide();
-		
-		//당월 M/M 검색
-		$("#btn_search").click(function() {
+		if($("#search_date").val() == "" || $("#search_user_seq").val() == "") {
 			
-			if($("#search_date").val() == "" || $("#search_user_seq").val() == "") {
-				
-				alert("작업월과 성명을 선택해 주세요.");
-				return;
-				
-			} else {
+			alert("작업월과 성명을 선택해 주세요.");
+			return;
+			
+		} else {
 
+			$("#urlPage").val("userMM");
+			$("#methodType").val("search");
+			doSubmit();
+		
+		}
+		
+	});
+	
+	
+	//M/M 입력 추가 버튼
+	$("#btn_add").click(function(){
+		
+		var searchDate = $("#search_date").val();
+		var userSeq = $("#search_user_seq").val();
+		var userMM = $("#userMM").val();
+		
+		window.open("userMM.grv?methodType=write&search_date=" + searchDate +"&userSEQ=" + userSeq + "&userMM=" + userMM, "MM작성","width=600,height=750,history=no,resizable=no,status=no,scrollbars=yes,menubar=no, resizable=no");
+	});
+	
+	
+	//M/M  완료 버튼
+	$("#btn_complete").click(function(){
+		
+		if($("#user_mm").html() == $("#user_mm_total").html()) {
+		
+			if(confirm("완료 후 수정이 불가능 합니다.")){
+			
 				$("#urlPage").val("userMM");
-				$("#methodType").val("search");
+				$("#methodType").val("complete");
 				doSubmit();
-			
 			}
-			
-		});
 		
+		} else {
+			alert("당월 M/M값과 총 M/M값이 다릅니다.");
+			return;
+		}
 		
-		//M/M 입력 추가 버튼
-		$("#btn_add").click(function(){
-			
-			var searchDate = $("#search_date").val();
-			var userSeq = $("#search_user_seq").val();
-			var userMM = $("#userMM").val();
-			
-			window.open("userMM.grv?methodType=write&search_date=" + searchDate +"&userSEQ=" + userSeq + "&userMM=" + userMM, "MM작성","width=600,height=750,history=no,resizable=no,status=no,scrollbars=yes,menubar=no, resizable=no");
-		});
-		
-		
-		//M/M  완료 버튼
-		$("#btn_complete").click(function(){
-			
-			if($("#user_mm").html() == $("#user_mm_total").html()) {
-			
-				if(confirm("완료 후 수정이 불가능 합니다.")){
-				
-					$("#urlPage").val("userMM");
-					$("#methodType").val("complete");
-					doSubmit();
-				}
-			
-			} else {
-				alert("당월 M/M값과 총 M/M값이 다릅니다.");
-				return;
-			}
-			
-		});
-	//$(function(){}) 종료		
-	})
+	});
+//$(function(){}) 종료		
+})
+
+
+//작업월 선택
+function choiceDate(page) {
 	
+	$("#urlPage").val("userMM");
+	$("#methodType").val("dateSearch");
+	doSubmit();
 	
-	//작업월 선택
-	function choiceDate(page) {
-		
-		$("#urlPage").val("userMM");
-		$("#methodType").val("dateSearch");
-		doSubmit();
-		
-	}
+}
+
+
+//MM입력 저장
+function userMMSave(projectSEQ, projectMM){
 	
+	$("#urlPage").val("userMM");
+	$("#methodType").val("save");
 	
-	//MM입력 저장
-	function userMMSave(projectSEQ, projectMM){
-		
-		$("#urlPage").val("userMM");
-		$("#methodType").val("save");
-		
-		$("#project_SEQ").val(projectSEQ);
-		$("#project_MM").val(projectMM);
-		
-		doSubmit();
-		
-	}
+	$("#project_SEQ").val(projectSEQ);
+	$("#project_MM").val(projectMM);
 	
+	doSubmit();
 	
-	//MM입력 삭제
-	function userMMDelete(){
-		
-		$("#urlPage").val("userMM");
-		$("#methodType").val("delete");
-		doSubmit();
-		
-	}
+}
+
+
+//MM입력 삭제
+function userMMDelete(){
 	
+	$("#urlPage").val("userMM");
+	$("#methodType").val("delete");
+	doSubmit();
+	
+}
+
 </script>
 </head>
 <body>
-	<form id="userInfo" name="userInfo" method="post">
-		<input type="hidden"				id="urlPage" 				name="urlPage" 				value=""/>
-		<input type="hidden"				id="methodType" 			name="methodType" 			value=""/>
-		<input type="hidden"				id="userSEQ"				name="userSEQ" 				value="${userBean.userSEQ }"/>
-		<input type="hidden"				id="userID"					name="userID"				value="${userBean.userID }"/>
-		<input type="hidden"				id="userName" 				name="userName" 			value="${userBean.userName }"/>
-		<input type="hidden"				id="userMail" 				name="userMail" 			value="${userBean.userMail }"/>
-		<input type="hidden"				id="userNum" 				name="userNum" 				value="${userBean.userNum }"/>
-		<input type="hidden"				id="userAuth" 				name="userAuth" 			value="${userBean.userAuth }"/>
-		<input type="hidden"				id="project_SEQ" 			name="project_SEQ" 			value=""/>
-		<input type="hidden"				id="project_MM" 			name="project_MM" 			value=""/>
-		
-		<c:if test="${lUserDefaultMM.size() != 0 }">
-			<c:forEach var='item' items="${lUserDefaultMM }" begin="0" end="0">
-				<input type="hidden"				id="i_mm_seq_pk" 			name="i_mm_seq_pk" 			value="${item.i_seq_pk }"/>
-				<input type="hidden"				id="userMM" 				name="userMM"	 			value="${item.d_mm }"/>
-			</c:forEach>
-		</c:if>
+<form id="userInfo" name="userInfo" method="post" style="width:1600px; margin:auto; margin-top:50px">
+	<input type="hidden"				id="urlPage" 				name="urlPage" 				value="${urlPage }"/>
+	<input type="hidden"				id="methodType" 			name="methodType" 			value=""/>
+	<input type="hidden"				id="userSEQ"				name="userSEQ" 				value="${userBean.userSEQ }"/>
+	<input type="hidden"				id="userID"					name="userID"				value="${userBean.userID }"/>
+	<input type="hidden"				id="userName" 				name="userName" 			value="${userBean.userName }"/>
+	<input type="hidden"				id="userMail" 				name="userMail" 			value="${userBean.userMail }"/>
+	<input type="hidden"				id="userNum" 				name="userNum" 				value="${userBean.userNum }"/>
+	<input type="hidden"				id="userAuth" 				name="userAuth" 			value="${userBean.userAuth }"/>
+	<input type="hidden"				id="userDeptAuth" 			name="userDeptAuth" 		value="${userBean.userDeptAuth }"/>
+	<input type="hidden"				id="project_user_SEQ" 		name="project_user_SEQ" 	value=""/>
+	<input type="hidden"				id="project_user_MM" 		name="project_user_MM" 		value=""/>
+	<input type="hidden"				id="project_SEQ" 			name="project_SEQ" 			value=""/>
+	<input type="hidden"				id="project_MM" 			name="project_MM" 			value=""/>
 	
-		<jsp:include page="/WEB-INF/form/top.jsp"></jsp:include>
-		
-		<div class="mm-menu-name"><h5>입력자 M/M (본인입력)</h5></div>
-		
-		<table class="mm-search">
+	<c:if test="${lUserDefaultMM.size() != 0 }">
+		<c:forEach var='item' items="${lUserDefaultMM }" begin="0" end="0">
+			<input type="hidden"				id="i_mm_seq_pk" 			name="i_mm_seq_pk" 			value="${item.i_seq_pk }"/>
+			<input type="hidden"				id="userMM" 				name="userMM"	 			value="${item.d_mm }"/>
+		</c:forEach>
+	</c:if>
+
+	<jsp:include page="/WEB-INF/form/top.jsp"></jsp:include>
+	
+	<div class="mm-menu-name"><h5>입력자 M/M (본인입력)</h5></div>
+	
+	<table class="mm-search">
+		<tr>
+			<th class="text-muted" style="width:60px; text-align: left;">작업월</th>
+			<td style="width:120px;">
+				<select id="search_date" name="search_date" class="form-control" onchange="choiceDate();">
+					<option value="">작업월 </option>
+					<c:forEach var='item' items="${lMonth }">
+						<option value="${item }" ${item == searchBean.search_date ? "selected='selected'" : ""}>${item }</option>
+					</c:forEach>
+				</select>
+			</td>
+			<th class="text-muted" style="width:60px; text-align: center;">성명</th>
+			<td style="width:100px;">
+				<select id="search_user_seq" name="search_user_seq" class="form-control">
+					<option value="">성명</option>
+					<c:forEach  var='item' items="${lPeople }">
+						<option value="${item.userSEQ }" ${item.userSEQ == searchBean.search_user_seq ? "selected='selected'" : ""}>${item.userName }</option>
+					</c:forEach>
+				</select>
+			</td>
+			<td class="text-muted" style="width:60px; text-align: right;">
+				<button type="button" class="btn btn-secondary btn-sm" id="btn_search">조회</button>
+			</td>
+		</tr>
+	</table>
+	
+	
+	<table class="mm-search">
+		<c:if test="${btn_flag eq true }">
 			<tr>
-				<th class="text-muted" style="width:60px; text-align: right;">작업월</th>
-				<td style="width:120px;">
-					<select id="search_date" name="search_date" class="form-control" onchange="choiceDate();">
-						<option value="">작업월 </option>
-						<c:forEach var='item' items="${lMonth }">
-							<option value="${item }" ${item == searchBean.search_date ? "selected='selected'" : ""}>${item }</option>
-						</c:forEach>
-					</select>
+				<td style="margin-top:10px;">
+					<input type="button" class="btn btn-outline-primary" id="btn_add" value="입력"/>
+					<input type="button" class="btn btn-outline-primary" id="btn_complete" value="완료"/>
 				</td>
-				<th class="text-muted" style="width:60px; text-align: right;">성명</th>
-				<td style="width:100px;">
-					<select id="search_user_seq" name="search_user_seq" class="form-control">
-						<option value="">성명</option>
-						<c:forEach  var='item' items="${lPeople }">
-							<option value="${item.userSEQ }" ${item.userSEQ == searchBean.search_user_seq ? "selected='selected'" : ""}>${item.userName }</option>
-						</c:forEach>
-					</select>
-				</td>
-				<td class="text-muted" style="width:60px; text-align: right;">
-					<button type="button" class="btn btn-secondary btn-sm" id="btn_search">조회</button>
-				</td>
+				<td class="text_right" width="50%">투입 M/M 값이 0인 경우 해당 프로젝트는 저장되지 않습니다.</td>
 			</tr>
-		</table>
-		
-		
-		<table class="mm-search">
-			<c:if test="${btn_flag eq true }">
-				<tr>
-					<td>
-						<input type="button" class="btn btn-outline-primary" id="btn_add" value="입력"/>
-						<input type="button" class="btn btn-outline-primary" id="btn_complete" value="완료"/>
-					</td>
-					<td class="text_right" width="50%">투입 M/M 값이 0인 경우 해당 프로젝트는 저장되지 않습니다.</td>
-				</tr>
-			</c:if>
-		</table>
-		
-		
-		<!-- 조회 테이블 -->
-		<table class="table table-borderless">
-			<tr>
-				<td>
-					<table class="table table-bordered">
-						<thead>
-							<tr class="table-primary">
-								<th scope="col" style="color: #848484;">작업년도</th>
-								<th scope="col" style="color: #848484;">부서코드</th>
-								<th scope="col" style="color: #848484;">부서명</th>
-								<th scope="col" style="color: #848484;">사번</th>
-								<th scope="col" style="color: #848484;">성명</th>
-								<th scope="col" style="color: #848484;">당월 M/M</th>
+		</c:if>
+	</table>
+	
+	
+	<!-- 조회 테이블 -->
+	<table class="table">
+		<tr>
+			<td>
+				<table class="table table-bordered">
+					<thead>
+						<tr class="table-primary">
+							<th scope="col" style="color: #050505; font-size: 14px;">작업년도</th>
+							<th scope="col" style="color: #050505; font-size: 14px;">부서코드</th>
+							<th scope="col" style="color: #050505; font-size: 14px;">부서명</th>
+							<th scope="col" style="color: #050505; font-size: 14px;">사번</th>
+							<th scope="col" style="color: #050505; font-size: 14px;">성명</th>
+							<th scope="col" style="color: #050505; font-size: 14px;">당월 M/M</th>
+						</tr>
+					</thead>
+					<c:if test="${lUserDefaultMM.size() != 0 }">
+						<c:forEach var='item' items="${lUserDefaultMM }" begin="0" end="0">
+							<tr>
+								<td style="font-size: 14px;">${item.d_job_date }</td>
+								<td style="font-size: 14px;">${item.v_dept_code }</td>
+								<td style="font-size: 14px;">${item.v_dept_name }</td>
+								<td style="font-size: 14px;">${item.v_man_seq }</td>
+								<td style="font-size: 14px;">${item.v_user_name_k }</td>
+								<td id="user_mm" name="user_mm" value="${item.d_mm }" style="font-size: 14px;">${item.d_mm }</td>
 							</tr>
-						</thead>
-						<c:if test="${lUserDefaultMM.size() != 0 }">
-							<c:forEach var='item' items="${lUserDefaultMM }" begin="0" end="0">
-								<tr>
-									<td>${item.d_job_date }</td>
-									<td>${item.v_dept_code }</td>
-									<td>${item.v_dept_name }</td>
-									<td>${item.v_man_seq }</td>
-									<td>${item.v_user_name_k }</td>
-									<td id="user_mm" name="user_mm" value="${item.d_mm }">${item.d_mm }</td>
-								</tr>
-							</c:forEach>
+						</c:forEach>
+					</c:if>
+				</table>
+			</td>
+			<td>
+				<table id="project_code_table" name="project_code_table" class="table table-bordered">
+					<thead>
+						<tr class="table-primary">
+							<th scope="col" style="color: #050505; font-size: 14px;">프로젝트 명</th>
+							<th scope="col" style="color: #050505; font-size: 14px;">투입 M/M</th>
+						</tr>
+					</thead>
+					
+					<c:forEach var='item' items="${lUserDefaultMM }">
+						<c:if test="${item.v_project_name ne null }">
+							<tr>
+								<td style="font-size: 14px;">
+									<span class="data_view">
+										${item.v_project_name }
+									</span>
+								</td>
+								<td style="font-size: 14px;">
+									<span class="data_view">
+										${item.d_mm_user }
+									</span>
+								</td>
+							</tr>
 						</c:if>
-					</table>
-				</td>
-				<td>
-					<table id="project_code_table" name="project_code_table" class="table table-bordered">
-						<thead>
-							<tr class="table-primary">
-								<th scope="col" style="color: #848484;">프로젝트 명</th>
-								<th scope="col" style="color: #848484;">투입 M/M</th>
+					</c:forEach>
+					<c:if test="${lUserDefaultMM.size() != 0 }">
+						<c:forEach var='item' items="${lUserDefaultMM }" begin="0" end="0">
+							<tr>
+								<td class="table-info" style="font-size: 14px;">총 M/M</td>
+								<td id="user_mm_total" name="user_mm_total" value="${item.d_mm_user_sum }" style="font-size: 14px;">${item.d_mm_user_sum }</td>
 							</tr>
-						</thead>
-						
-						<c:forEach var='item' items="${lUserDefaultMM }">
-							<c:if test="${item.v_project_name ne null }">
-								<tr>
-									<td>
-										<span class="data_view">
-											${item.v_project_name }
-										</span>
-									</td>
-									<td>
-										<span class="data_view">
-											${item.d_mm_user }
-										</span>
-									</td>
-								</tr>
-							</c:if>
 						</c:forEach>
-						<c:if test="${lUserDefaultMM.size() != 0 }">
-							<c:forEach var='item' items="${lUserDefaultMM }" begin="0" end="0">
-								<tr>
-									<td class="table-info">총 M/M</td>
-									<td id="user_mm_total" name="user_mm_total" value="${item.d_mm_user_sum }">${item.d_mm_user_sum }</td>
-								</tr>
-							</c:forEach>
-						</c:if>	
-					</table>
-				</td>
-			</tr>
-		</table>
-		
-	</form>
+					</c:if>	
+				</table>
+			</td>
+		</tr>
+	</table>
+	
+</form>
 </body>
 </html>

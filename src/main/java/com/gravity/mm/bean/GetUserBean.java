@@ -3,10 +3,55 @@ package com.gravity.mm.bean;
 public class GetUserBean {
 	
 	private String userSEQ;
+	private String userID;
+	private String userMail;
 	private String userNum;
 	private String userName;
+	private String userUse;
 	private String userDeptName;
+	private String userAuthYN;
+	private int userAuthCount;
 	private String v_confirmor;
+	
+	
+	public int getUserAuthCount() {
+		return userAuthCount;
+	}
+	public void setUserAuthCount(int userAuthCount) {
+		this.userAuthCount = userAuthCount;
+	}
+	
+	
+	public String getUserAuthYN() {
+		return userAuthYN;
+	}
+	public void setUserAuthYN(String userAuthYN) {
+		this.userAuthYN = userAuthYN;
+	}
+	
+	
+	public String getUserID() {
+		return userID;
+	}
+	public void setUserID(String userID) {
+		this.userID = userID;
+	}
+	
+	
+	public String getUserMail() {
+		return userMail;
+	}
+	public void setUserMail(String userMail) {
+		this.userMail = userMail;
+	}
+	
+	
+	public String getUserUse() {
+		return userUse;
+	}
+	public void setUserUse(String userUse) {
+		this.userUse = userUse;
+	}
 	
 	
 	public String getUserSEQ() {

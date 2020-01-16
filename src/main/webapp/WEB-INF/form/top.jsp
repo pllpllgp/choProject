@@ -14,59 +14,85 @@
 <script type="text/javascript" src="/mm/common/js/select2.js"></script>
 <script type="text/javascript">
 
-	function topMenu(page){
+window.onload = function() {
+	var urlpage = $("#urlPage").val();
+	var urlAuth = $("#userAuth").val();
+	var userDeptAuth = $("#userDeptAuth").val();
 	
-		$("#urlPage").val(page);
-		$("#methodType").val("normal");
-		doSubmit();
+	if(userDeptAuth == "N" && urlAuth == "N") {
 		
+		$("#teamMM-tab").hide();
 	}
-	   
+	
+	if(urlAuth == "N") {
+		
+		$("#projectCode-tab").hide();
+		$("#otherPeople-tab").hide();
+		$("#confirmor-tab").hide();
+		$("#defaultMM-tab").hide();
+		$("#adminTeam-tab").hide();
+		$("#userSuperintend-tab").hide();
+		$("#teamSuperintend-tab").hide();
+	}
+	
+	document.getElementById("userMM-tab").className = "nav-link";
+	document.getElementById("teamMM-tab").className = "nav-link";
+	document.getElementById("projectCode-tab").className = "nav-link";
+	document.getElementById("otherPeople-tab").className = "nav-link";
+	document.getElementById("confirmor-tab").className = "nav-link";
+	document.getElementById("defaultMM-tab").className = "nav-link";
+	document.getElementById("adminTeam-tab").className = "nav-link";
+	document.getElementById("userSuperintend-tab").className = "nav-link";
+	document.getElementById("teamSuperintend-tab").className = "nav-link";
+	
+	document.getElementById(urlpage + "-tab").className = "nav-link active";
+}
+
+function topMenu(page){
+
+	$("#urlPage").val(page);
+	$("#methodType").val("normal");
+	doSubmit();
+	
+}
+	
 </script>
 </head>
 <body>
 
-	<header>
-		<div class="text-left" style="height: 70px; margin-top: 10px; margin-left: 10px;"></div>
-		<ul class="text-right" style="margin-right: 70px;">
-			<div class="btn-group">
-				<button type="button" class="btn btn-danger dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-					입력자
-				</button>
-				<div class="dropdown-menu">
-					<a class="dropdown-item" href="javascript:void(0)" onclick="topMenu('userMM');">본인입력</a>
-				</div>
-			</div>
-			<div class="btn-group">
-				<button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-					확인자
-				</button>
-				<div class="dropdown-menu">
-					<a class="dropdown-item" href="javascript:void(0)" onclick="topMenu('teamMM');">팀별입력현황</a>
-				</div>
-			</div>
-			<c:if test="${userBean.userAuth == 'Y' }">
-				<div class="btn-group">
-					<button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-						관리자
-					</button>
-					<div class="dropdown-menu">
-						<a class="dropdown-item" href="javascript:void(0)" onclick="topMenu('projectCode');">프로젝트관리</a>
-						<div class="dropdown-divider"></div>
-						<a class="dropdown-item" href="javascript:void(0)" onclick="topMenu('otherPeople');">타인입력지정</a>
-						<div class="dropdown-divider"></div>
-						<a class="dropdown-item" href="javascript:void(0)" onclick="topMenu('confirmor');">확인자지정</a>
-						<div class="dropdown-divider"></div>
-						<a class="dropdown-item" href="javascript:void(0)" onclick="topMenu('defaultMM');">당월 M/M입력</a>
-						<div class="dropdown-divider"></div>
-						<a class="dropdown-item" href="javascript:void(0)" onclick="topMenu('adminTeam');">팀별입력현황</a>
-						<!-- <div class="dropdown-divider"></div>
-						<a class="dropdown-item" href="javascript:void(0)" onclick="topMenu('userSuperintend');">입력자관리</a>
-						<div class="dropdown-divider"></div>
-						<a class="dropdown-item" href="javascript:void(0)" onclick="topMenu('teamSuperintend');">팀관리</a> -->
-					</div>
-				</div>
-			</c:if>
+	<header style="width:1600px; margin:auto; margin-top:50px">
+		<div class="text-left" style="height: 70px; margin-top: 10px; margin-left: 10px;">
+			<img src="/common/images/gravity_Ci.png" width="207" height="49"/>
+		</div>
+		
+		<ul class="nav nav-tabs" id="myTab" role="tablist">
+			<li class="nav-item">
+				<a class="nav-link active" id="userMM-tab" href="#userMM" role="tab" aria-controls="userMM" aria-selected="false" onclick="topMenu('userMM');">유저 본인 입력</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" id="teamMM-tab" href="#teamMM" role="tab" aria-controls="teamMM" aria-selected="true" onclick="topMenu('teamMM');">팀별 입력 현황</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" id="projectCode-tab" href="#projectCode" role="tab" aria-controls="projectCode" onclick="topMenu('projectCode');">프로젝트 관리(관리자)</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" id="otherPeople-tab" href="#otherPeople" role="tab" aria-controls="otherPeople" onclick="topMenu('otherPeople');">대리입력 지정(관리자)</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" id="confirmor-tab" href="#confirmor" role="tab" aria-controls="confirmor" onclick="topMenu('confirmor');">확인자 지정(관리자)</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" id="defaultMM-tab" href="#defaultMM" role="tab" aria-controls="defaultMM" onclick="topMenu('defaultMM');">당월 M/M 입력(관리자)</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" id="adminTeam-tab" href="#adminTeam" role="tab" aria-controls="adminTeam" onclick="topMenu('adminTeam');">팀별입력 현황(관리자)</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" id="userSuperintend-tab" href="#userSuperintend" role="tab" aria-controls="userSuperintend" onclick="topMenu('userSuperintend');">직원 관리(관리자)</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" id="teamSuperintend-tab" href="#teamSuperintend" role="tab" aria-controls="teamSuperintend" onclick="topMenu('teamSuperintend');">팀 관리(관리자)</a>
+			</li>
 		</ul>
 	</header>
 	

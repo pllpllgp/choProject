@@ -4,7 +4,8 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -12,8 +13,8 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
+import com.gravity.mm.bean.AddPrevMonthBean;
 import com.gravity.mm.bean.GetOtherPeopleBean;
-import com.gravity.mm.bean.GetProjectCodeBean;
 import com.gravity.mm.bean.GetUserBean;
 import com.gravity.mm.bean.SearchBean;
 import com.gravity.mm.bean.UserBean;
@@ -26,7 +27,7 @@ import com.gravity.mm.util.DateTime;
 @RequestMapping("/")
 public class OtherPeopleController {
 	
-	private static Logger LOG = Logger.getLogger(OtherPeopleController.class);
+	private static Logger log = LoggerFactory.getLogger(OtherPeopleController.class);
 	
 	@Autowired ITeamService its;
 	@Autowired IUserService ius;
@@ -35,11 +36,36 @@ public class OtherPeopleController {
 	//타인 입력 지정 페이지 처음 접속
 	@RequestMapping(value = "otherPeople", method = RequestMethod.POST)
 	public String login(HttpServletRequest request, @ModelAttribute("userBean")UserBean userBean, Model model) {
-		
-		System.out.println(">>>>>>>>>>>>>>>>>>> adminMM(otherPeople) Merthod = normal <<<<<<<<<<<<<<<<<<<");
-		System.out.println("userBean > " + userBean.getUserID());
+				
+		log.info(">>>>>>>>>>>>>>>>>>> adminMM(otherPeople) Merthod = normal <<<<<<<<<<<<<<<<<<<");
+		log.info("userBean > " + userBean.getUserID());
 		
 		model.addAttribute("userBean", userBean);
+		model.addAttribute("urlPage", "otherPeople");
+		
+		return "admin/otherPeople";
+
+	}
+	
+	
+	//전월 프로젝트 데이터 가져와서 새로 입력
+	@RequestMapping(value = "otherPeople", params = "methodType=addPrev", method = RequestMethod.POST)
+	public String addPrevOther(HttpServletRequest request, @ModelAttribute("userBean")UserBean userBean, @ModelAttribute("searchBean")SearchBean searchBean, Model model) {
+		
+		log.info(">>>>>>>>>>>>>>>>>>> adminMM(projectCode) Merthod = addPrevMonth <<<<<<<<<<<<<<<<<<<");
+		
+		String prev_month 			= request.getParameter("prev_month")+"-01";
+		String default_month 		= request.getParameter("default_month")+"-01";
+		
+		AddPrevMonthBean addPrevMonthBean		= new AddPrevMonthBean();
+
+		addPrevMonthBean.setPrev_month(prev_month);
+		addPrevMonthBean.setDefault_month(default_month);
+		
+		log.info(">>>>>>>>>>>>>>>>>>> prev_month <<<<<<<<<<<<<<<<<<<" + prev_month);
+		log.info(">>>>>>>>>>>>>>>>>>> default_month <<<<<<<<<<<<<<<<<<<" + default_month);
+		
+		int iResult = ias.addPrevOtherPeople(addPrevMonthBean);
 		
 		return "admin/otherPeople";
 
@@ -50,7 +76,7 @@ public class OtherPeopleController {
 	@RequestMapping(value = "otherPeople", params="methodType=search", method = RequestMethod.POST)
 	public String getOtherPeoplePost(HttpServletRequest request, @ModelAttribute("userBean")UserBean userBean, @ModelAttribute("searchBean")SearchBean searchBean,Model model) {
 		
-		System.out.println(">>>>>>>>>>>>>>>>>>> adminMM(otherPeople) Merthod = search <<<<<<<<<<<<<<<<<<<");
+		log.info(">>>>>>>>>>>>>>>>>>> adminMM(otherPeople) Merthod = search <<<<<<<<<<<<<<<<<<<");
 		
 		String search_date 							= request.getParameter("search_date");
 		
@@ -67,7 +93,7 @@ public class OtherPeopleController {
 	@RequestMapping(value = "otherPeople", params="methodType=save", method = RequestMethod.POST)
 	public String getSave(HttpServletRequest request, @ModelAttribute("userBean")UserBean userBean, @ModelAttribute("searchBean")SearchBean searchBean,Model model) {
 		
-		System.out.println(">>>>>>>>>>>>>>>>>>> adminMM(otherPeople) Merthod = save <<<<<<<<<<<<<<<<<<<");
+		log.info(">>>>>>>>>>>>>>>>>>> adminMM(otherPeople) Merthod = save <<<<<<<<<<<<<<<<<<<");
 		
 		String peopleState 								= request.getParameter("peopleState");
 		String addPeopleDate 							= request.getParameter("addPeopleDate");
@@ -77,6 +103,9 @@ public class OtherPeopleController {
 		String addOtherPeopleSeq 						= request.getParameter("addOtherPeopleSeq");
 		
 		GetOtherPeopleBean lOtherPeople 				= new GetOtherPeopleBean();
+		
+		log.info("peopleSeq : " + peopleSeq);
+		log.info("addOtherPeopleSeq : " + addOtherPeopleSeq);
 		
 		if(peopleState.equals("edit")) {
 			lOtherPeople.setI_seq_pk(Integer.parseInt(peopleSeq));
@@ -101,7 +130,7 @@ public class OtherPeopleController {
 	@RequestMapping(value = "otherPeople", params="methodType=delete", method = RequestMethod.POST)
 	public String getDelete(HttpServletRequest request, @ModelAttribute("userBean")UserBean userBean, @ModelAttribute("searchBean")SearchBean searchBean,Model model) {
 		
-		System.out.println(">>>>>>>>>>>>>>>>>>> adminMM(otherPeople) Merthod = delete <<<<<<<<<<<<<<<<<<<");
+		log.info(">>>>>>>>>>>>>>>>>>> adminMM(otherPeople) Merthod = delete <<<<<<<<<<<<<<<<<<<");
 		
 		String otherSeq 								= request.getParameter("otherSeq");
 		
@@ -123,13 +152,14 @@ public class OtherPeopleController {
 	//세팅값으로 타인지정 조회(반복 사용)
 	public String getOtherPeopleRepeatedSearch(HttpServletRequest request, @ModelAttribute("userBean")UserBean userBean, @ModelAttribute("searchBean")SearchBean searchBean, Model model) {
 									
-		System.out.println(">>>>>>>>>>>>>>>>>>> adminMM(projectCode) Merthod = getOtherPeopleRepeatedSearch <<<<<<<<<<<<<<<<<<<");
+		log.info(">>>>>>>>>>>>>>>>>>> adminMM(otherPeople) Merthod = getOtherPeopleRepeatedSearch <<<<<<<<<<<<<<<<<<<");
 		
 		List<GetOtherPeopleBean> lOtherPeople 	= ias.getOtherPeople(searchBean);
 		
 		model.addAttribute("userBean", userBean);
 		model.addAttribute("searchBean", searchBean);
 		model.addAttribute("lOtherPeople", lOtherPeople);
+		model.addAttribute("urlPage", "otherPeople");
 
 		
 		return "Y";
